@@ -1,6 +1,6 @@
 # Izou-Server
 
-[![Build Status](https://travis-ci.org/coolcrowd/worker-service.svg?branch=master)](https://travis-ci.org/coolcrowd/worker-service)
+[![Build Status](https://travis-ci.org/intellimate/Server.svg?branch=master)](https://travis-ci.org/intellimate/Server)
 
 ## Requirements
 
