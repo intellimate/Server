@@ -8,7 +8,7 @@
  * MySQL 5.6
  * Gradle (optional, but recommended)
  
-## Running the Izou-Server
+## Running the Izou-Server (not yet possible)
 
 you easily can run the Worker-Service via docker:
 
