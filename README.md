@@ -23,7 +23,7 @@ where:
 * `database.password` the password of the database account
 * `os.url` is the url of the object-service
 
-this will bind the Worker-Service on post 4567 on 127.0.0.1 of the hosts machine.
+this will bind the Server on post 4567 on 127.0.0.1 of the hosts machine.
 
 The configuration files are located under `/conf` on the image and named `configuration.properties` and `logging.xml`.
 Please see below for more details.
@@ -32,7 +32,7 @@ Please see below for more details.
 
 ```bash
 # Clone repository and change into its directory.
-git clone https://github.com/coolcrowd/worker-service && cd worker-service
+git clone https://github.com/intellimate/server && cd server
 
 # Import database schema from ./src/main/resources/db.sql
 
@@ -47,7 +47,7 @@ In the git, the configuration is detailed in `./conf/configuration.properties`. 
 configuration-file to permanently change properties. Every property can be overridden by setting a global-property via
 `-D{key}={value}`.
 
-You can also set the config-file location with the system-property `workerservice.config`, e.g. `-Dworkerservice.config=location`.
+You can also set the config-file location with the system-property `server.config`, e.g. `-server.config=location`.
 If none passed the app will always look for the configuration file in `./conf/`.
 
 The logging is specified in the logging-file `./conf/logging.xml`. You can alter the logging-file to permanently change properties.
