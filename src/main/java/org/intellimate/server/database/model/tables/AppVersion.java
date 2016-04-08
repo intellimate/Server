@@ -4,6 +4,7 @@
 package org.intellimate.server.database.model.tables;
 
 
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,7 +34,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppVersion extends TableImpl<AppVersionRecord> {
 
-	private static final long serialVersionUID = -1016188339;
+	private static final long serialVersionUID = -2007053593;
 
 	/**
 	 * The reference instance of <code>izou_server.App_Version</code>
@@ -62,6 +63,11 @@ public class AppVersion extends TableImpl<AppVersionRecord> {
 	 * The column <code>izou_server.App_Version.version</code>.
 	 */
 	public final TableField<AppVersionRecord, String> VERSION = createField("version", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
+
+	/**
+	 * The column <code>izou_server.App_Version.timestamp</code>.
+	 */
+	public final TableField<AppVersionRecord, Timestamp> TIMESTAMP = createField("timestamp", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).defaulted(true), this, "");
 
 	/**
 	 * Create a <code>izou_server.App_Version</code> table reference
