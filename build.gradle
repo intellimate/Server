@@ -1,0 +1,79 @@
+group 'org.intellimate.izou'
+version '0.5'
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: "io.ratpack.ratpack-java"
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'mysql:mysql-connector-java:5.+'
+        classpath 'nu.studer:gradle-jooq-plugin:1.0.5'
+        classpath "net.saliman:gradle-cobertura-plugin:2.3.+"
+        classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.6.+"
+        classpath "io.ratpack:ratpack-gradle:1.2.0"
+    }
+}
+
+mainClassName = 'org.intellimate.server.Main'
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.intellimate.server.Main'
+    }
+}
+
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'org.intellimate.server.Main'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.jooq:jooq:3.+'
+    compile 'org.jooq:jooq-meta:3.+'
+    compile 'org.jooq:jool:0.9.+'
+    compile 'org.jooq:jooq-codegen:3.+'
+    compile 'mysql:mysql-connector-java:5.+'
+    compile 'org.mybatis:mybatis:3.+'
+    compile 'com.zaxxer:HikariCP:2.+'
+    compile 'com.google.code.gson:gson:2.4'
+    compile 'ch.qos.logback:logback-core:1.+'
+    compile 'ch.qos.logback:logback-classic:1.+'
+    compile 'org.slf4j:slf4j-api:1.7.12'
+    compile 'io.jsonwebtoken:jjwt:0.6.+'
+    compile 'com.google.protobuf:protobuf-java:3.+'
+    compile 'com.google.protobuf:protobuf-java-util:3.+'
+    testCompile 'org.mockito:mockito-core:1.+'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile ratpack.dependency('test')
+}
+
+//docker-related
+task prepareDocker(type: Copy) {
+    dependsOn "fatJar"
+    file("./bin").mkdirs()
+    from "$buildDir/libs/" + project.name + '-all-' + project.version + ".jar"
+    into "./bin"
+    rename(project.name + '-all-' + project.version + ".jar", project.name + '.jar')
+    doLast {
+        clean.execute()
+    }
+}
