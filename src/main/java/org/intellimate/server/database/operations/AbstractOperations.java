@@ -2,6 +2,8 @@ package org.intellimate.server.database.operations;
 
 import org.jooq.DSLContext;
 
+import static org.intellimate.server.database.model.Tables.*;
+
 /**
  * base class for all operations
  * @author LeanderK
