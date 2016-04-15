@@ -17,6 +17,7 @@ import org.intellimate.server.database.model.tables.AppInstance;
 import org.intellimate.server.database.model.tables.AppTag;
 import org.intellimate.server.database.model.tables.AppVersion;
 import org.intellimate.server.database.model.tables.DatabaseVersion;
+import org.intellimate.server.database.model.tables.Izou;
 import org.intellimate.server.database.model.tables.IzouInstance;
 import org.intellimate.server.database.model.tables.User;
 import org.jooq.Table;
@@ -36,7 +37,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class IzouServer extends SchemaImpl {
 
-	private static final long serialVersionUID = -2043518385;
+	private static final long serialVersionUID = -1740337787;
 
 	/**
 	 * The reference instance of <code>izou_server</code>
@@ -66,6 +67,7 @@ public class IzouServer extends SchemaImpl {
 			AppTag.APP_TAG,
 			AppVersion.APP_VERSION,
 			DatabaseVersion.DATABASE_VERSION,
+			Izou.IZOU,
 			IzouInstance.IZOU_INSTANCE,
 			User.USER);
 	}

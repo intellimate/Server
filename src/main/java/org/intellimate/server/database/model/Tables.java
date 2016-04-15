@@ -13,6 +13,7 @@ import org.intellimate.server.database.model.tables.AppInstance;
 import org.intellimate.server.database.model.tables.AppTag;
 import org.intellimate.server.database.model.tables.AppVersion;
 import org.intellimate.server.database.model.tables.DatabaseVersion;
+import org.intellimate.server.database.model.tables.Izou;
 import org.intellimate.server.database.model.tables.IzouInstance;
 import org.intellimate.server.database.model.tables.User;
 
@@ -64,6 +65,11 @@ public class Tables {
 	 * The table izou_server.Database_Version
 	 */
 	public static final DatabaseVersion DATABASE_VERSION = org.intellimate.server.database.model.tables.DatabaseVersion.DATABASE_VERSION;
+
+	/**
+	 * The table izou_server.Izou
+	 */
+	public static final Izou IZOU = org.intellimate.server.database.model.tables.Izou.IZOU;
 
 	/**
 	 * The table izou_server.Izou_Instance
