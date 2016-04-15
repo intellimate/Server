@@ -1,11 +1,15 @@
 package org.intellimate.server;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
 
 /**
  * this class creates and reads the JWT (Json Web Token)
@@ -14,7 +18,11 @@ import java.util.Objects;
  */
 public class JWTHelper {
     private static final Logger logger = LoggerFactory.getLogger(JWTHelper.class);
+    public static final String SUBJECT_IZOU = "izou";
+    public static final String SUBJECT_USER = "user";
+    public static final String REFRESH_CLAIM = "refresh";
     private final String secret;
+    private final Duration accessTokenExpiration = Duration.ofDays(1);
 
     /**
      * creates the JWT-Helper
@@ -28,30 +36,58 @@ public class JWTHelper {
     }
 
     /**
-     * creates the JWT
-     * @param subject the workerID
+     * creates the user JWT-access token (has an expiration-date)
+     * @param id the id of the user
      * @return the JWT string
      */
-    public String generateJWT(String subject) {
-        Objects.requireNonNull(subject);
-        logger.debug("encoding JWT for subject", subject);
+    public String generateUserAccessJWT(int id) {
+        logger.debug("encoding JWT for user", id);
+        Instant expiration = Instant.now().plus(accessTokenExpiration);
         return Jwts.builder()
-                .setSubject(subject)
+                .setSubject(SUBJECT_USER)
+                .claim(SUBJECT_USER, id)
+                .setExpiration(Date.from(expiration))
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
     }
 
     /**
-     * returns the Subject from the JWT
-     * @param jwt the jwt to parse
-     * @return the workerID
+     * creates the izou JWT-access token (has an expiration-date)
+     * @param id the id of the izou-instance
+     * @return the JWT string
      */
-    public String getSubject(String jwt) {
-        String subject = Jwts.parser().setSigningKey(secret).parseClaimsJws(jwt).getBody().getSubject();
-        if (subject == null) {
-            logger.error("subject is null");
-            throw new UnauthorizedException("subject is missing");
-        }
-        return subject;
+    public String generateIzouAccessJWT(int id) {
+        logger.debug("encoding JWT for izou-instance", id);
+        Instant expiration = Instant.now().plus(accessTokenExpiration);
+        return Jwts.builder()
+                .setSubject(SUBJECT_IZOU)
+                .claim(SUBJECT_IZOU, id)
+                .setExpiration(Date.from(expiration))
+                .signWith(SignatureAlgorithm.HS256, secret)
+                .compact();
+    }
+
+    /**
+     * creates the izou JWT-refresh token (has no expiration-date)
+     * @param id the id of the izou-instance
+     * @return the JWT string
+     */
+    public String generateIzouRefreshJWT(int id) {
+        logger.debug("encoding JWT for izou-instance", id);
+        return Jwts.builder()
+                .setSubject(SUBJECT_IZOU)
+                .claim(SUBJECT_IZOU, id)
+                .claim(REFRESH_CLAIM, Boolean.TRUE)
+                .signWith(SignatureAlgorithm.HS256, secret)
+                .compact();
+    }
+
+    /**
+     * returns the claims from the JWT
+     * @param jwt the jwt to parse
+     * @return the claims
+     */
+    public Jws<Claims> getClaims(String jwt) {
+        return Jwts.parser().setSigningKey(secret).parseClaimsJws(jwt);
     }
 }

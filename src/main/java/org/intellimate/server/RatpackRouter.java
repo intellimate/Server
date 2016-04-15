@@ -57,7 +57,7 @@ public class RatpackRouter {
                                     throw new BadRequestException("Authorization header must contain Bearer token in the format <Bearer JWT>");
                                 }
                                 String jwt = jwtHeader.substring("Bearer ".length());
-                                String workerID = jwtHelper.getSubject(jwt);
+                                //String workerID = jwtHelper.getSubject(jwt);
                                 //ctx.next(Registry.single(WorkerID.class, new WorkerID(workerID)));
                             } else {
                                 ctx.next();
