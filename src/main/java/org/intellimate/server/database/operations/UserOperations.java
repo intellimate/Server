@@ -2,9 +2,7 @@ package org.intellimate.server.database.operations;
 
 import org.intellimate.server.database.model.tables.records.UserRecord;
 import org.jooq.DSLContext;
-import org.jooq.Record1;
 
-import javax.swing.text.html.Option;
 import java.util.Optional;
 
 import static org.intellimate.server.database.model.Tables.*;
@@ -20,16 +18,14 @@ public class UserOperations extends AbstractOperations {
     }
 
     /**
-     * returns the password for the email
+     * returns the user for the email
      * @param email the email of the user
-     * @return the password or empty if not existing
+     * @return the user or empty if not existing
      */
-    public Optional<String> getUserPassword(String email) {
-        return create.select(USER.PASSWORD)
-                .from(USER)
+    public Optional<UserRecord> getUser(String email) {
+        return create.selectFrom(USER)
                 .where(USER.EMAIL.eq(email))
-                .fetchOptional()
-                .map(Record1::value1);
+                .fetchOptional();
     }
 
     /**
