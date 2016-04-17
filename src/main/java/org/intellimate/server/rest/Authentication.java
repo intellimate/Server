@@ -1,7 +1,5 @@
-package org.intellimate.server.queries;
+package org.intellimate.server.rest;
 
-import org.apache.commons.validator.routines.EmailValidator;
-import org.intellimate.server.BadRequestException;
 import org.intellimate.server.jwt.JWTHelper;
 import org.intellimate.server.NotFoundException;
 import org.intellimate.server.UnauthorizedException;

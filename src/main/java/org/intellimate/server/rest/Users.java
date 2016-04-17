@@ -1,4 +1,4 @@
-package org.intellimate.server.queries;
+package org.intellimate.server.rest;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.intellimate.server.BadRequestException;
