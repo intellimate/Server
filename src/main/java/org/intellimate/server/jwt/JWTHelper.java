@@ -1,15 +1,19 @@
-package org.intellimate.server;
+package org.intellimate.server.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.intellimate.server.BadRequestException;
+import org.intellimate.server.UnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+
+import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.Int;
 
 /**
  * this class creates and reads the JWT (Json Web Token)
@@ -18,9 +22,8 @@ import java.util.*;
  */
 public class JWTHelper {
     private static final Logger logger = LoggerFactory.getLogger(JWTHelper.class);
-    public static final String SUBJECT_IZOU = "izou";
-    public static final String SUBJECT_USER = "user";
-    public static final String REFRESH_CLAIM = "refresh";
+    private static final String REFRESH_CLAIM = "refresh";
+    private static final String ID_CLAIM = "sid";
     private final String secret;
     private final Duration accessTokenExpiration = Duration.ofDays(1);
 
@@ -44,8 +47,8 @@ public class JWTHelper {
         logger.debug("encoding JWT for user", id);
         Instant expiration = Instant.now().plus(accessTokenExpiration);
         return Jwts.builder()
-                .setSubject(SUBJECT_USER)
-                .claim(SUBJECT_USER, id)
+                .setSubject(Subject.USER.name())
+                .claim(ID_CLAIM, String.valueOf(id))
                 .setExpiration(Date.from(expiration))
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
@@ -60,8 +63,8 @@ public class JWTHelper {
         logger.debug("encoding JWT for izou-instance", id);
         Instant expiration = Instant.now().plus(accessTokenExpiration);
         return Jwts.builder()
-                .setSubject(SUBJECT_IZOU)
-                .claim(SUBJECT_IZOU, id)
+                .setSubject(Subject.IZOU.name())
+                .claim(ID_CLAIM, String.valueOf(id))
                 .setExpiration(Date.from(expiration))
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
@@ -75,11 +78,33 @@ public class JWTHelper {
     public String generateIzouRefreshJWT(int id) {
         logger.debug("encoding JWT for izou-instance", id);
         return Jwts.builder()
-                .setSubject(SUBJECT_IZOU)
-                .claim(SUBJECT_IZOU, id)
+                .setSubject(Subject.IZOU.name())
+                .claim(ID_CLAIM, String.valueOf(id))
                 .claim(REFRESH_CLAIM, Boolean.TRUE)
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
+    }
+
+    /**
+     * parses the JWT and create the {@link JWTokenPassed}
+     * @param token the jwt
+     * @return the suitable JWT
+     */
+    public JWTokenPassed parseToken(String token) {
+        Jws<Claims> claimsJws = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+        Object rawId = claimsJws.getBody().get(ID_CLAIM);
+        if (rawId == null) {
+            throw new UnauthorizedException("Illegal JWT, no id");
+        }
+        int id;
+        try {
+            id = Integer.parseInt((String)rawId);
+        } catch (NumberFormatException e) {
+            throw new UnauthorizedException("Illegal JWT, id is not an integer");
+        }
+        return new JWTokenPassed(Subject.valueOf(claimsJws.getBody().getSubject()),
+                claimsJws.getBody().containsKey(REFRESH_CLAIM) && claimsJws.getBody().get(REFRESH_CLAIM).equals(Boolean.TRUE),
+                id);
     }
 
     /**
