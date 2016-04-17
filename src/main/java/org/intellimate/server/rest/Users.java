@@ -2,8 +2,12 @@ package org.intellimate.server.rest;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.intellimate.server.BadRequestException;
+import org.intellimate.server.NotFoundException;
+import org.intellimate.server.UnauthorizedException;
 import org.intellimate.server.database.model.tables.records.UserRecord;
 import org.intellimate.server.database.operations.UserOperations;
+import org.intellimate.server.jwt.JWTokenPassed;
+import org.intellimate.server.jwt.Subject;
 import org.intellimate.server.proto.User;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
@@ -51,7 +55,21 @@ public class Users {
                 .build();
     }
 
-    public void removeUser(int id) {
-
+    /**
+     * removes the user from the database
+     * @param id the user to remove
+     * @param jwTokenPassed the jwt passed
+     */
+    public void removeUser(int id, JWTokenPassed jwTokenPassed) {
+        if (jwTokenPassed.getSubject() != Subject.USER) {
+            throw new BadRequestException("method only allowed for users");
+        }
+        if (id != jwTokenPassed.getId()) {
+            throw new UnauthorizedException("not allowed to delete other user");
+        }
+        boolean existed = userOperations.deleteUser(id);
+        if (!existed) {
+            throw new NotFoundException(String.format("user %d already deleted", id));
+        }
     }
 }
