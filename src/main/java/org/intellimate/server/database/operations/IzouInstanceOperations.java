@@ -1,5 +1,6 @@
 package org.intellimate.server.database.operations;
 
+import org.intellimate.server.database.model.tables.records.IzouInstanceRecord;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
@@ -30,5 +31,32 @@ public class IzouInstanceOperations extends AbstractOperations {
                 DSL.select(IZOU_INSTANCE.ID_INSTANCES)
                     .where(IZOU_INSTANCE.ID_INSTANCES.eq(id))
         );
+    }
+
+    /**
+     * inserts the izou instance the database
+     * @param user the user the instance associated with
+     * @param name the name of the instance
+     * @return the id of the instance
+     */
+    public int insertIzouInstance(int user, String name) {
+        return create.insertInto(IZOU_INSTANCE)
+                .set(new IzouInstanceRecord(null, user, name))
+                .returning(IZOU_INSTANCE.ID_INSTANCES)
+                .fetchOne()
+                .getIdInstances();
+    }
+
+    /**
+     * deletes the izou-instance from the database
+     * @param user the user associated
+     * @param izouInstance the instance id
+     * @return true if existed and tied to the user
+     */
+    public boolean removeIzouInstance(int user, int izouInstance) {
+        return create.deleteFrom(IZOU_INSTANCE)
+                .where(IZOU_INSTANCE.ID_INSTANCES.eq(izouInstance))
+                .and(IZOU_INSTANCE.USER.eq(user))
+                .execute() == 1;
     }
 }
