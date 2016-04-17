@@ -31,8 +31,24 @@ public class UserOperations extends AbstractOperations {
     /**
      * inserts the user into the database
      * @param userRecord the record to insert
+     * @return the id of the user in the database
      */
-    public void insertUser(UserRecord userRecord) {
-        create.executeInsert(userRecord);
+    public int insertUser(UserRecord userRecord) {
+        return create.insertInto(USER)
+                .set(userRecord)
+                .returning(USER.ID_USER)
+                .fetchOne()
+                .getIdUser();
+    }
+
+    /**
+     * deletes the user form the database
+     * @param userID the id of the user
+     * @return true if the user existed
+     */
+    public boolean deleteUser(int userID) {
+        return create.deleteFrom(USER)
+                .where(USER.ID_USER.eq(userID))
+                .execute() == 1;
     }
 }
