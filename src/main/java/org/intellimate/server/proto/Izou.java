@@ -17,6 +17,7 @@ public  final class Izou extends
   private Izou() {
     id_ = 0;
     version_ = 0;
+    uploadLink_ = "";
   }
 
   @java.lang.Override
@@ -51,6 +52,12 @@ public  final class Izou extends
           case 16: {
 
             version_ = input.readInt32();
+            break;
+          }
+          case 26: {
+            java.lang.String s = input.readStringRequireUtf8();
+
+            uploadLink_ = s;
             break;
           }
         }
@@ -95,6 +102,40 @@ public  final class Izou extends
     return version_;
   }
 
+  public static final int UPLOAD_LINK_FIELD_NUMBER = 3;
+  private volatile java.lang.Object uploadLink_;
+  /**
+   * <code>optional string upload_link = 3;</code>
+   */
+  public java.lang.String getUploadLink() {
+    java.lang.Object ref = uploadLink_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      uploadLink_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>optional string upload_link = 3;</code>
+   */
+  public com.google.protobuf.ByteString
+      getUploadLinkBytes() {
+    java.lang.Object ref = uploadLink_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      uploadLink_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
@@ -113,6 +154,9 @@ public  final class Izou extends
     if (version_ != 0) {
       output.writeInt32(2, version_);
     }
+    if (!getUploadLinkBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 3, uploadLink_);
+    }
   }
 
   public int getSerializedSize() {
@@ -127,6 +171,9 @@ public  final class Izou extends
     if (version_ != 0) {
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(2, version_);
+    }
+    if (!getUploadLinkBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, uploadLink_);
     }
     memoizedSize = size;
     return size;
@@ -243,6 +290,8 @@ public  final class Izou extends
 
       version_ = 0;
 
+      uploadLink_ = "";
+
       return this;
     }
 
@@ -267,6 +316,7 @@ public  final class Izou extends
       org.intellimate.server.proto.Izou result = new org.intellimate.server.proto.Izou(this);
       result.id_ = id_;
       result.version_ = version_;
+      result.uploadLink_ = uploadLink_;
       onBuilt();
       return result;
     }
@@ -287,6 +337,10 @@ public  final class Izou extends
       }
       if (other.getVersion() != 0) {
         setVersion(other.getVersion());
+      }
+      if (!other.getUploadLink().isEmpty()) {
+        uploadLink_ = other.uploadLink_;
+        onChanged();
       }
       onChanged();
       return this;
@@ -362,6 +416,75 @@ public  final class Izou extends
     public Builder clearVersion() {
       
       version_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object uploadLink_ = "";
+    /**
+     * <code>optional string upload_link = 3;</code>
+     */
+    public java.lang.String getUploadLink() {
+      java.lang.Object ref = uploadLink_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        uploadLink_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>optional string upload_link = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getUploadLinkBytes() {
+      java.lang.Object ref = uploadLink_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        uploadLink_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>optional string upload_link = 3;</code>
+     */
+    public Builder setUploadLink(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      uploadLink_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>optional string upload_link = 3;</code>
+     */
+    public Builder clearUploadLink() {
+      
+      uploadLink_ = getDefaultInstance().getUploadLink();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>optional string upload_link = 3;</code>
+     */
+    public Builder setUploadLinkBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      uploadLink_ = value;
       onChanged();
       return this;
     }

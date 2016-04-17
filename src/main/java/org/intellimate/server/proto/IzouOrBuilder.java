@@ -16,4 +16,14 @@ public interface IzouOrBuilder extends
    * <code>optional int32 version = 2;</code>
    */
   int getVersion();
+
+  /**
+   * <code>optional string upload_link = 3;</code>
+   */
+  java.lang.String getUploadLink();
+  /**
+   * <code>optional string upload_link = 3;</code>
+   */
+  com.google.protobuf.ByteString
+      getUploadLinkBytes();
 }
