@@ -5,7 +5,7 @@
         <driver>com.mysql.jdbc.Driver</driver>
         <url>jdbc:mysql://localhost:8888</url>
         <user>LeanderK</user>
-        <password></password>
+        <password>y560</password>
     </jdbc>
 
     <generator>

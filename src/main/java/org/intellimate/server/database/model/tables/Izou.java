@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Izou extends TableImpl<IzouRecord> {
 
-	private static final long serialVersionUID = 1886091042;
+	private static final long serialVersionUID = -764286652;
 
 	/**
 	 * The reference instance of <code>izou_server.Izou</code>
@@ -55,7 +55,12 @@ public class Izou extends TableImpl<IzouRecord> {
 	/**
 	 * The column <code>izou_server.Izou.version</code>.
 	 */
-	public final TableField<IzouRecord, Integer> VERSION = createField("version", org.jooq.impl.SQLDataType.INTEGER, this, "");
+	public final TableField<IzouRecord, Integer> VERSION = createField("version", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
+
+	/**
+	 * The column <code>izou_server.Izou.active</code>.
+	 */
+	public final TableField<IzouRecord, Boolean> ACTIVE = createField("active", org.jooq.impl.SQLDataType.BIT.nullable(false), this, "");
 
 	/**
 	 * Create a <code>izou_server.Izou</code> table reference
