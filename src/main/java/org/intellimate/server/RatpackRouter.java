@@ -6,6 +6,7 @@ import com.google.protobuf.util.JsonFormat;
 import org.intellimate.server.jwt.JWTHelper;
 import org.intellimate.server.jwt.JWTokenPassed;
 import org.intellimate.server.jwt.Subject;
+import org.intellimate.server.proto.IzouInstance;
 import org.intellimate.server.proto.User;
 import org.intellimate.server.rest.Authentication;
 import org.intellimate.server.rest.Users;
@@ -110,8 +111,15 @@ public class RatpackRouter implements RequestHelper {
                                             .map(message -> users.addUser(message.getUsername(), message.getEmail(), message.getPassword()))
                             );
                         })
+                        .put("users/:id/izou", assureUser(ctx -> ctx.render(
+                                merge(ctx, IzouInstance.newBuilder(), Arrays.asList(IzouInstance.ID_FIELD_NUMBER, IzouInstance.TOKEN_FIELD_NUMBER))
+                                        .map(message -> users.addIzouInstance(assertParameterInt(ctx, "id"), message.getName(), ctx.get(JWTokenPassed.class)))
+                        )))
                         .delete("users/:id", assureUser(ctx ->
                                 users.removeUser(assertParameterInt(ctx, "id"), ctx.get(JWTokenPassed.class)))
+                        )
+                        .delete("users/:id/izou/:izouid", assureUser(ctx ->
+                                users.removeIzouInstance(assertParameterInt(ctx, "id"), assertParameterInt(ctx, "izouid"), ctx.get(JWTokenPassed.class)))
                         )
                 )
         );
