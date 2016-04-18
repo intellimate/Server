@@ -62,6 +62,7 @@ public class Keys {
 	public static final UniqueKey<AppVersionRecord> KEY_APP_VERSION_PRIMARY = UniqueKeys0.KEY_APP_VERSION_PRIMARY;
 	public static final UniqueKey<DatabaseVersionRecord> KEY_DATABASE_VERSION_PRIMARY = UniqueKeys0.KEY_DATABASE_VERSION_PRIMARY;
 	public static final UniqueKey<IzouRecord> KEY_IZOU_PRIMARY = UniqueKeys0.KEY_IZOU_PRIMARY;
+	public static final UniqueKey<IzouRecord> KEY_IZOU_VERSION_UNIQUE = UniqueKeys0.KEY_IZOU_VERSION_UNIQUE;
 	public static final UniqueKey<IzouInstanceRecord> KEY_IZOU_INSTANCE_PRIMARY = UniqueKeys0.KEY_IZOU_INSTANCE_PRIMARY;
 	public static final UniqueKey<UserRecord> KEY_USER_PRIMARY = UniqueKeys0.KEY_USER_PRIMARY;
 	public static final UniqueKey<UserRecord> KEY_USER_EMAIL_UNIQUE = UniqueKeys0.KEY_USER_EMAIL_UNIQUE;
@@ -92,6 +93,7 @@ public class Keys {
 		public static final UniqueKey<AppVersionRecord> KEY_APP_VERSION_PRIMARY = createUniqueKey(AppVersion.APP_VERSION, AppVersion.APP_VERSION.ID_APP_VERSION);
 		public static final UniqueKey<DatabaseVersionRecord> KEY_DATABASE_VERSION_PRIMARY = createUniqueKey(DatabaseVersion.DATABASE_VERSION, DatabaseVersion.DATABASE_VERSION.ID_DATABASE_VERSION);
 		public static final UniqueKey<IzouRecord> KEY_IZOU_PRIMARY = createUniqueKey(Izou.IZOU, Izou.IZOU.ID_IZOU);
+		public static final UniqueKey<IzouRecord> KEY_IZOU_VERSION_UNIQUE = createUniqueKey(Izou.IZOU, Izou.IZOU.VERSION);
 		public static final UniqueKey<IzouInstanceRecord> KEY_IZOU_INSTANCE_PRIMARY = createUniqueKey(IzouInstance.IZOU_INSTANCE, IzouInstance.IZOU_INSTANCE.ID_INSTANCES);
 		public static final UniqueKey<UserRecord> KEY_USER_PRIMARY = createUniqueKey(User.USER, User.USER.ID_USER);
 		public static final UniqueKey<UserRecord> KEY_USER_EMAIL_UNIQUE = createUniqueKey(User.USER, User.USER.EMAIL);

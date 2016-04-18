@@ -34,7 +34,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppVersion extends TableImpl<AppVersionRecord> {
 
-	private static final long serialVersionUID = -2007053593;
+	private static final long serialVersionUID = -139289690;
 
 	/**
 	 * The reference instance of <code>izou_server.App_Version</code>
@@ -60,14 +60,24 @@ public class AppVersion extends TableImpl<AppVersionRecord> {
 	public final TableField<AppVersionRecord, Integer> APP = createField("app", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
 
 	/**
-	 * The column <code>izou_server.App_Version.version</code>.
-	 */
-	public final TableField<AppVersionRecord, String> VERSION = createField("version", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
-
-	/**
 	 * The column <code>izou_server.App_Version.timestamp</code>.
 	 */
 	public final TableField<AppVersionRecord, Timestamp> TIMESTAMP = createField("timestamp", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).defaulted(true), this, "");
+
+	/**
+	 * The column <code>izou_server.App_Version.major</code>.
+	 */
+	public final TableField<AppVersionRecord, Integer> MAJOR = createField("major", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
+
+	/**
+	 * The column <code>izou_server.App_Version.minor</code>.
+	 */
+	public final TableField<AppVersionRecord, Integer> MINOR = createField("minor", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
+
+	/**
+	 * The column <code>izou_server.App_Version.patch</code>.
+	 */
+	public final TableField<AppVersionRecord, Integer> PATCH = createField("patch", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
 
 	/**
 	 * Create a <code>izou_server.App_Version</code> table reference

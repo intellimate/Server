@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Izou extends TableImpl<IzouRecord> {
 
-	private static final long serialVersionUID = -764286652;
+	private static final long serialVersionUID = 581958505;
 
 	/**
 	 * The reference instance of <code>izou_server.Izou</code>
@@ -53,14 +53,29 @@ public class Izou extends TableImpl<IzouRecord> {
 	public final TableField<IzouRecord, Integer> ID_IZOU = createField("id_Izou", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
 
 	/**
-	 * The column <code>izou_server.Izou.version</code>.
-	 */
-	public final TableField<IzouRecord, Integer> VERSION = createField("version", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
-
-	/**
 	 * The column <code>izou_server.Izou.active</code>.
 	 */
 	public final TableField<IzouRecord, Boolean> ACTIVE = createField("active", org.jooq.impl.SQLDataType.BIT.nullable(false), this, "");
+
+	/**
+	 * The column <code>izou_server.Izou.major</code>.
+	 */
+	public final TableField<IzouRecord, Integer> MAJOR = createField("major", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
+
+	/**
+	 * The column <code>izou_server.Izou.minor</code>.
+	 */
+	public final TableField<IzouRecord, Integer> MINOR = createField("minor", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
+
+	/**
+	 * The column <code>izou_server.Izou.patch</code>.
+	 */
+	public final TableField<IzouRecord, Integer> PATCH = createField("patch", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
+
+	/**
+	 * The column <code>izou_server.Izou.version</code>.
+	 */
+	public final TableField<IzouRecord, String> VERSION = createField("version", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
 	 * Create a <code>izou_server.Izou</code> table reference
@@ -97,7 +112,7 @@ public class Izou extends TableImpl<IzouRecord> {
 	 */
 	@Override
 	public List<UniqueKey<IzouRecord>> getKeys() {
-		return Arrays.<UniqueKey<IzouRecord>>asList(Keys.KEY_IZOU_PRIMARY);
+		return Arrays.<UniqueKey<IzouRecord>>asList(Keys.KEY_IZOU_PRIMARY, Keys.KEY_IZOU_VERSION_UNIQUE);
 	}
 
 	/**
