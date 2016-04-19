@@ -53,7 +53,7 @@ public class Users {
             throw new BadRequestException("invalid email: " + email);
         }
         String hashpw = BCrypt.hashpw(password, BCrypt.gensalt());
-        UserRecord userRecord = new UserRecord(null, email, hashpw, username);
+        UserRecord userRecord = new UserRecord(null, email, hashpw, username, false);
         int id = userOperations.insertUser(userRecord);
         return User.newBuilder()
                 .setEmail(email)
