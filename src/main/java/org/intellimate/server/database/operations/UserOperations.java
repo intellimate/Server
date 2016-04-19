@@ -29,6 +29,17 @@ public class UserOperations extends AbstractOperations {
     }
 
     /**
+     * returns the user for the id
+     * @param userID the primary key of the user table
+     * @return the user or empty if not existing
+     */
+    public Optional<UserRecord> getUser(int userID) {
+        return create.selectFrom(USER)
+                .where(USER.ID_USER.eq(userID))
+                .fetchOptional();
+    }
+
+    /**
      * inserts the user into the database
      * @param userRecord the record to insert
      * @return the id of the user in the database
