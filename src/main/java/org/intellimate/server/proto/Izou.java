@@ -16,8 +16,8 @@ public  final class Izou extends
   }
   private Izou() {
     id_ = 0;
-    version_ = 0;
-    uploadLink_ = "";
+    version_ = "";
+    downloadLink_ = "";
   }
 
   @java.lang.Override
@@ -49,15 +49,16 @@ public  final class Izou extends
             id_ = input.readInt32();
             break;
           }
-          case 16: {
+          case 18: {
+            java.lang.String s = input.readStringRequireUtf8();
 
-            version_ = input.readInt32();
+            version_ = s;
             break;
           }
           case 26: {
             java.lang.String s = input.readStringRequireUtf8();
 
-            uploadLink_ = s;
+            downloadLink_ = s;
             break;
           }
         }
@@ -94,42 +95,67 @@ public  final class Izou extends
   }
 
   public static final int VERSION_FIELD_NUMBER = 2;
-  private int version_;
+  private volatile java.lang.Object version_;
   /**
-   * <code>optional int32 version = 2;</code>
+   * <code>optional string version = 2;</code>
    */
-  public int getVersion() {
-    return version_;
-  }
-
-  public static final int UPLOAD_LINK_FIELD_NUMBER = 3;
-  private volatile java.lang.Object uploadLink_;
-  /**
-   * <code>optional string upload_link = 3;</code>
-   */
-  public java.lang.String getUploadLink() {
-    java.lang.Object ref = uploadLink_;
+  public java.lang.String getVersion() {
+    java.lang.Object ref = version_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      uploadLink_ = s;
+      version_ = s;
       return s;
     }
   }
   /**
-   * <code>optional string upload_link = 3;</code>
+   * <code>optional string version = 2;</code>
    */
   public com.google.protobuf.ByteString
-      getUploadLinkBytes() {
-    java.lang.Object ref = uploadLink_;
+      getVersionBytes() {
+    java.lang.Object ref = version_;
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
-      uploadLink_ = b;
+      version_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int DOWNLOAD_LINK_FIELD_NUMBER = 3;
+  private volatile java.lang.Object downloadLink_;
+  /**
+   * <code>optional string download_link = 3;</code>
+   */
+  public java.lang.String getDownloadLink() {
+    java.lang.Object ref = downloadLink_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      downloadLink_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>optional string download_link = 3;</code>
+   */
+  public com.google.protobuf.ByteString
+      getDownloadLinkBytes() {
+    java.lang.Object ref = downloadLink_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      downloadLink_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
@@ -151,11 +177,11 @@ public  final class Izou extends
     if (id_ != 0) {
       output.writeInt32(1, id_);
     }
-    if (version_ != 0) {
-      output.writeInt32(2, version_);
+    if (!getVersionBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 2, version_);
     }
-    if (!getUploadLinkBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 3, uploadLink_);
+    if (!getDownloadLinkBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 3, downloadLink_);
     }
   }
 
@@ -168,12 +194,11 @@ public  final class Izou extends
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(1, id_);
     }
-    if (version_ != 0) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(2, version_);
+    if (!getVersionBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(2, version_);
     }
-    if (!getUploadLinkBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, uploadLink_);
+    if (!getDownloadLinkBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(3, downloadLink_);
     }
     memoizedSize = size;
     return size;
@@ -288,9 +313,9 @@ public  final class Izou extends
       super.clear();
       id_ = 0;
 
-      version_ = 0;
+      version_ = "";
 
-      uploadLink_ = "";
+      downloadLink_ = "";
 
       return this;
     }
@@ -316,7 +341,7 @@ public  final class Izou extends
       org.intellimate.server.proto.Izou result = new org.intellimate.server.proto.Izou(this);
       result.id_ = id_;
       result.version_ = version_;
-      result.uploadLink_ = uploadLink_;
+      result.downloadLink_ = downloadLink_;
       onBuilt();
       return result;
     }
@@ -335,11 +360,12 @@ public  final class Izou extends
       if (other.getId() != 0) {
         setId(other.getId());
       }
-      if (other.getVersion() != 0) {
-        setVersion(other.getVersion());
+      if (!other.getVersion().isEmpty()) {
+        version_ = other.version_;
+        onChanged();
       }
-      if (!other.getUploadLink().isEmpty()) {
-        uploadLink_ = other.uploadLink_;
+      if (!other.getDownloadLink().isEmpty()) {
+        downloadLink_ = other.downloadLink_;
         onChanged();
       }
       onChanged();
@@ -394,97 +420,140 @@ public  final class Izou extends
       return this;
     }
 
-    private int version_ ;
+    private java.lang.Object version_ = "";
     /**
-     * <code>optional int32 version = 2;</code>
+     * <code>optional string version = 2;</code>
      */
-    public int getVersion() {
-      return version_;
-    }
-    /**
-     * <code>optional int32 version = 2;</code>
-     */
-    public Builder setVersion(int value) {
-      
-      version_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>optional int32 version = 2;</code>
-     */
-    public Builder clearVersion() {
-      
-      version_ = 0;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object uploadLink_ = "";
-    /**
-     * <code>optional string upload_link = 3;</code>
-     */
-    public java.lang.String getUploadLink() {
-      java.lang.Object ref = uploadLink_;
+    public java.lang.String getVersion() {
+      java.lang.Object ref = version_;
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        uploadLink_ = s;
+        version_ = s;
         return s;
       } else {
         return (java.lang.String) ref;
       }
     }
     /**
-     * <code>optional string upload_link = 3;</code>
+     * <code>optional string version = 2;</code>
      */
     public com.google.protobuf.ByteString
-        getUploadLinkBytes() {
-      java.lang.Object ref = uploadLink_;
+        getVersionBytes() {
+      java.lang.Object ref = version_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        uploadLink_ = b;
+        version_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
     /**
-     * <code>optional string upload_link = 3;</code>
+     * <code>optional string version = 2;</code>
      */
-    public Builder setUploadLink(
+    public Builder setVersion(
         java.lang.String value) {
       if (value == null) {
     throw new NullPointerException();
   }
   
-      uploadLink_ = value;
+      version_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>optional string upload_link = 3;</code>
+     * <code>optional string version = 2;</code>
      */
-    public Builder clearUploadLink() {
+    public Builder clearVersion() {
       
-      uploadLink_ = getDefaultInstance().getUploadLink();
+      version_ = getDefaultInstance().getVersion();
       onChanged();
       return this;
     }
     /**
-     * <code>optional string upload_link = 3;</code>
+     * <code>optional string version = 2;</code>
      */
-    public Builder setUploadLinkBytes(
+    public Builder setVersionBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
       
-      uploadLink_ = value;
+      version_ = value;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object downloadLink_ = "";
+    /**
+     * <code>optional string download_link = 3;</code>
+     */
+    public java.lang.String getDownloadLink() {
+      java.lang.Object ref = downloadLink_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        downloadLink_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>optional string download_link = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getDownloadLinkBytes() {
+      java.lang.Object ref = downloadLink_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        downloadLink_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>optional string download_link = 3;</code>
+     */
+    public Builder setDownloadLink(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      downloadLink_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>optional string download_link = 3;</code>
+     */
+    public Builder clearDownloadLink() {
+      
+      downloadLink_ = getDefaultInstance().getDownloadLink();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>optional string download_link = 3;</code>
+     */
+    public Builder setDownloadLinkBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      downloadLink_ = value;
       onChanged();
       return this;
     }

@@ -23,9 +23,9 @@ public final class IzouOuterClass {
   static {
     java.lang.String[] descriptorData = {
       "\n\032server-protobuf/izou.proto\022\013intellimat" +
-      "e\"8\n\004Izou\022\n\n\002id\030\001 \001(\005\022\017\n\007version\030\002 \001(\005\022\023" +
-      "\n\013upload_link\030\003 \001(\tB \n\034org.intellimate.s" +
-      "erver.protoP\001b\006proto3"
+      "e\":\n\004Izou\022\n\n\002id\030\001 \001(\005\022\017\n\007version\030\002 \001(\t\022\025" +
+      "\n\rdownload_link\030\003 \001(\tB \n\034org.intellimate" +
+      ".server.protoP\001b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -44,7 +44,7 @@ public final class IzouOuterClass {
     internal_static_intellimate_Izou_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_intellimate_Izou_descriptor,
-        new java.lang.String[] { "Id", "Version", "UploadLink", });
+        new java.lang.String[] { "Id", "Version", "DownloadLink", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
