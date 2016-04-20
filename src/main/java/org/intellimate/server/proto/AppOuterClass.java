@@ -28,13 +28,13 @@ public final class AppOuterClass {
   static {
     java.lang.String[] descriptorData = {
       "\n\031server-protobuf/app.proto\022\013intellimate" +
-      "\"\320\001\n\003App\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \001(\t\022\021\n\tde" +
+      "\"\342\001\n\003App\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \001(\t\022\021\n\tde" +
       "veloper\030\003 \001(\t\022\023\n\013description\030\004 \001(\t\022\014\n\004ta" +
       "gs\030\005 \003(\t\022-\n\010versions\030\006 \003(\0132\033.intellimate" +
-      ".App.AppVersion\032J\n\nAppVersion\022\017\n\007version" +
-      "\030\001 \001(\t\022\025\n\rdownload_link\030\002 \001(\t\022\024\n\014depende" +
-      "ncies\030\003 \003(\005B \n\034org.intellimate.server.pr" +
-      "otoP\001b\006proto3"
+      ".App.AppVersion\032\\\n\nAppVersion\022\017\n\007version" +
+      "\030\001 \001(\t\022\025\n\rdownload_link\030\002 \001(\t\022&\n\014depende" +
+      "ncies\030\003 \003(\0132\020.intellimate.AppB \n\034org.int" +
+      "ellimate.server.protoP\001b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

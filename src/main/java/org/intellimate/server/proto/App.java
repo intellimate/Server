@@ -142,17 +142,28 @@ public  final class App extends
         getDownloadLinkBytes();
 
     /**
-     * <code>repeated int32 dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 3;</code>
      */
-    java.util.List<java.lang.Integer> getDependenciesList();
+    java.util.List<org.intellimate.server.proto.App> 
+        getDependenciesList();
     /**
-     * <code>repeated int32 dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 3;</code>
+     */
+    org.intellimate.server.proto.App getDependencies(int index);
+    /**
+     * <code>repeated .intellimate.App dependencies = 3;</code>
      */
     int getDependenciesCount();
     /**
-     * <code>repeated int32 dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 3;</code>
      */
-    int getDependencies(int index);
+    java.util.List<? extends org.intellimate.server.proto.AppOrBuilder> 
+        getDependenciesOrBuilderList();
+    /**
+     * <code>repeated .intellimate.App dependencies = 3;</code>
+     */
+    org.intellimate.server.proto.AppOrBuilder getDependenciesOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code intellimate.App.AppVersion}
@@ -207,25 +218,12 @@ public  final class App extends
               downloadLink_ = s;
               break;
             }
-            case 24: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
-                dependencies_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000004;
-              }
-              dependencies_.add(input.readInt32());
-              break;
-            }
             case 26: {
-              int length = input.readRawVarint32();
-              int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
-                dependencies_ = new java.util.ArrayList<java.lang.Integer>();
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                dependencies_ = new java.util.ArrayList<org.intellimate.server.proto.App>();
                 mutable_bitField0_ |= 0x00000004;
               }
-              while (input.getBytesUntilLimit() > 0) {
-                dependencies_.add(input.readInt32());
-              }
-              input.popLimit(limit);
+              dependencies_.add(input.readMessage(org.intellimate.server.proto.App.parser(), extensionRegistry));
               break;
             }
           }
@@ -325,27 +323,39 @@ public  final class App extends
     }
 
     public static final int DEPENDENCIES_FIELD_NUMBER = 3;
-    private java.util.List<java.lang.Integer> dependencies_;
+    private java.util.List<org.intellimate.server.proto.App> dependencies_;
     /**
-     * <code>repeated int32 dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 3;</code>
      */
-    public java.util.List<java.lang.Integer>
-        getDependenciesList() {
+    public java.util.List<org.intellimate.server.proto.App> getDependenciesList() {
       return dependencies_;
     }
     /**
-     * <code>repeated int32 dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 3;</code>
+     */
+    public java.util.List<? extends org.intellimate.server.proto.AppOrBuilder> 
+        getDependenciesOrBuilderList() {
+      return dependencies_;
+    }
+    /**
+     * <code>repeated .intellimate.App dependencies = 3;</code>
      */
     public int getDependenciesCount() {
       return dependencies_.size();
     }
     /**
-     * <code>repeated int32 dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 3;</code>
      */
-    public int getDependencies(int index) {
+    public org.intellimate.server.proto.App getDependencies(int index) {
       return dependencies_.get(index);
     }
-    private int dependenciesMemoizedSerializedSize = -1;
+    /**
+     * <code>repeated .intellimate.App dependencies = 3;</code>
+     */
+    public org.intellimate.server.proto.AppOrBuilder getDependenciesOrBuilder(
+        int index) {
+      return dependencies_.get(index);
+    }
 
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -359,19 +369,14 @@ public  final class App extends
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (!getVersionBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessage.writeString(output, 1, version_);
       }
       if (!getDownloadLinkBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessage.writeString(output, 2, downloadLink_);
       }
-      if (getDependenciesList().size() > 0) {
-        output.writeRawVarint32(26);
-        output.writeRawVarint32(dependenciesMemoizedSerializedSize);
-      }
       for (int i = 0; i < dependencies_.size(); i++) {
-        output.writeInt32NoTag(dependencies_.get(i));
+        output.writeMessage(3, dependencies_.get(i));
       }
     }
 
@@ -386,19 +391,9 @@ public  final class App extends
       if (!getDownloadLinkBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessage.computeStringSize(2, downloadLink_);
       }
-      {
-        int dataSize = 0;
-        for (int i = 0; i < dependencies_.size(); i++) {
-          dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(dependencies_.get(i));
-        }
-        size += dataSize;
-        if (!getDependenciesList().isEmpty()) {
-          size += 1;
-          size += com.google.protobuf.CodedOutputStream
-              .computeInt32SizeNoTag(dataSize);
-        }
-        dependenciesMemoizedSerializedSize = dataSize;
+      for (int i = 0; i < dependencies_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, dependencies_.get(i));
       }
       memoizedSize = size;
       return size;
@@ -507,6 +502,7 @@ public  final class App extends
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getDependenciesFieldBuilder();
         }
       }
       public Builder clear() {
@@ -515,8 +511,12 @@ public  final class App extends
 
         downloadLink_ = "";
 
-        dependencies_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        if (dependenciesBuilder_ == null) {
+          dependencies_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+        } else {
+          dependenciesBuilder_.clear();
+        }
         return this;
       }
 
@@ -543,11 +543,15 @@ public  final class App extends
         int to_bitField0_ = 0;
         result.version_ = version_;
         result.downloadLink_ = downloadLink_;
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
-          dependencies_ = java.util.Collections.unmodifiableList(dependencies_);
-          bitField0_ = (bitField0_ & ~0x00000004);
+        if (dependenciesBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+            dependencies_ = java.util.Collections.unmodifiableList(dependencies_);
+            bitField0_ = (bitField0_ & ~0x00000004);
+          }
+          result.dependencies_ = dependencies_;
+        } else {
+          result.dependencies_ = dependenciesBuilder_.build();
         }
-        result.dependencies_ = dependencies_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -572,15 +576,31 @@ public  final class App extends
           downloadLink_ = other.downloadLink_;
           onChanged();
         }
-        if (!other.dependencies_.isEmpty()) {
-          if (dependencies_.isEmpty()) {
-            dependencies_ = other.dependencies_;
-            bitField0_ = (bitField0_ & ~0x00000004);
-          } else {
-            ensureDependenciesIsMutable();
-            dependencies_.addAll(other.dependencies_);
+        if (dependenciesBuilder_ == null) {
+          if (!other.dependencies_.isEmpty()) {
+            if (dependencies_.isEmpty()) {
+              dependencies_ = other.dependencies_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+            } else {
+              ensureDependenciesIsMutable();
+              dependencies_.addAll(other.dependencies_);
+            }
+            onChanged();
           }
-          onChanged();
+        } else {
+          if (!other.dependencies_.isEmpty()) {
+            if (dependenciesBuilder_.isEmpty()) {
+              dependenciesBuilder_.dispose();
+              dependenciesBuilder_ = null;
+              dependencies_ = other.dependencies_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+              dependenciesBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getDependenciesFieldBuilder() : null;
+            } else {
+              dependenciesBuilder_.addAllMessages(other.dependencies_);
+            }
+          }
         }
         onChanged();
         return this;
@@ -747,70 +767,244 @@ public  final class App extends
         return this;
       }
 
-      private java.util.List<java.lang.Integer> dependencies_ = java.util.Collections.emptyList();
+      private java.util.List<org.intellimate.server.proto.App> dependencies_ =
+        java.util.Collections.emptyList();
       private void ensureDependenciesIsMutable() {
         if (!((bitField0_ & 0x00000004) == 0x00000004)) {
-          dependencies_ = new java.util.ArrayList<java.lang.Integer>(dependencies_);
+          dependencies_ = new java.util.ArrayList<org.intellimate.server.proto.App>(dependencies_);
           bitField0_ |= 0x00000004;
          }
       }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.intellimate.server.proto.App, org.intellimate.server.proto.App.Builder, org.intellimate.server.proto.AppOrBuilder> dependenciesBuilder_;
+
       /**
-       * <code>repeated int32 dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 3;</code>
        */
-      public java.util.List<java.lang.Integer>
-          getDependenciesList() {
-        return java.util.Collections.unmodifiableList(dependencies_);
+      public java.util.List<org.intellimate.server.proto.App> getDependenciesList() {
+        if (dependenciesBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(dependencies_);
+        } else {
+          return dependenciesBuilder_.getMessageList();
+        }
       }
       /**
-       * <code>repeated int32 dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 3;</code>
        */
       public int getDependenciesCount() {
-        return dependencies_.size();
+        if (dependenciesBuilder_ == null) {
+          return dependencies_.size();
+        } else {
+          return dependenciesBuilder_.getCount();
+        }
       }
       /**
-       * <code>repeated int32 dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 3;</code>
        */
-      public int getDependencies(int index) {
-        return dependencies_.get(index);
+      public org.intellimate.server.proto.App getDependencies(int index) {
+        if (dependenciesBuilder_ == null) {
+          return dependencies_.get(index);
+        } else {
+          return dependenciesBuilder_.getMessage(index);
+        }
       }
       /**
-       * <code>repeated int32 dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 3;</code>
        */
       public Builder setDependencies(
-          int index, int value) {
-        ensureDependenciesIsMutable();
-        dependencies_.set(index, value);
-        onChanged();
+          int index, org.intellimate.server.proto.App value) {
+        if (dependenciesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureDependenciesIsMutable();
+          dependencies_.set(index, value);
+          onChanged();
+        } else {
+          dependenciesBuilder_.setMessage(index, value);
+        }
         return this;
       }
       /**
-       * <code>repeated int32 dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 3;</code>
        */
-      public Builder addDependencies(int value) {
-        ensureDependenciesIsMutable();
-        dependencies_.add(value);
-        onChanged();
+      public Builder setDependencies(
+          int index, org.intellimate.server.proto.App.Builder builderForValue) {
+        if (dependenciesBuilder_ == null) {
+          ensureDependenciesIsMutable();
+          dependencies_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          dependenciesBuilder_.setMessage(index, builderForValue.build());
+        }
         return this;
       }
       /**
-       * <code>repeated int32 dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 3;</code>
+       */
+      public Builder addDependencies(org.intellimate.server.proto.App value) {
+        if (dependenciesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureDependenciesIsMutable();
+          dependencies_.add(value);
+          onChanged();
+        } else {
+          dependenciesBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .intellimate.App dependencies = 3;</code>
+       */
+      public Builder addDependencies(
+          int index, org.intellimate.server.proto.App value) {
+        if (dependenciesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureDependenciesIsMutable();
+          dependencies_.add(index, value);
+          onChanged();
+        } else {
+          dependenciesBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .intellimate.App dependencies = 3;</code>
+       */
+      public Builder addDependencies(
+          org.intellimate.server.proto.App.Builder builderForValue) {
+        if (dependenciesBuilder_ == null) {
+          ensureDependenciesIsMutable();
+          dependencies_.add(builderForValue.build());
+          onChanged();
+        } else {
+          dependenciesBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .intellimate.App dependencies = 3;</code>
+       */
+      public Builder addDependencies(
+          int index, org.intellimate.server.proto.App.Builder builderForValue) {
+        if (dependenciesBuilder_ == null) {
+          ensureDependenciesIsMutable();
+          dependencies_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          dependenciesBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .intellimate.App dependencies = 3;</code>
        */
       public Builder addAllDependencies(
-          java.lang.Iterable<? extends java.lang.Integer> values) {
-        ensureDependenciesIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, dependencies_);
-        onChanged();
+          java.lang.Iterable<? extends org.intellimate.server.proto.App> values) {
+        if (dependenciesBuilder_ == null) {
+          ensureDependenciesIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, dependencies_);
+          onChanged();
+        } else {
+          dependenciesBuilder_.addAllMessages(values);
+        }
         return this;
       }
       /**
-       * <code>repeated int32 dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 3;</code>
        */
       public Builder clearDependencies() {
-        dependencies_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
-        onChanged();
+        if (dependenciesBuilder_ == null) {
+          dependencies_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+          onChanged();
+        } else {
+          dependenciesBuilder_.clear();
+        }
         return this;
+      }
+      /**
+       * <code>repeated .intellimate.App dependencies = 3;</code>
+       */
+      public Builder removeDependencies(int index) {
+        if (dependenciesBuilder_ == null) {
+          ensureDependenciesIsMutable();
+          dependencies_.remove(index);
+          onChanged();
+        } else {
+          dependenciesBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .intellimate.App dependencies = 3;</code>
+       */
+      public org.intellimate.server.proto.App.Builder getDependenciesBuilder(
+          int index) {
+        return getDependenciesFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .intellimate.App dependencies = 3;</code>
+       */
+      public org.intellimate.server.proto.AppOrBuilder getDependenciesOrBuilder(
+          int index) {
+        if (dependenciesBuilder_ == null) {
+          return dependencies_.get(index);  } else {
+          return dependenciesBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .intellimate.App dependencies = 3;</code>
+       */
+      public java.util.List<? extends org.intellimate.server.proto.AppOrBuilder> 
+           getDependenciesOrBuilderList() {
+        if (dependenciesBuilder_ != null) {
+          return dependenciesBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(dependencies_);
+        }
+      }
+      /**
+       * <code>repeated .intellimate.App dependencies = 3;</code>
+       */
+      public org.intellimate.server.proto.App.Builder addDependenciesBuilder() {
+        return getDependenciesFieldBuilder().addBuilder(
+            org.intellimate.server.proto.App.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .intellimate.App dependencies = 3;</code>
+       */
+      public org.intellimate.server.proto.App.Builder addDependenciesBuilder(
+          int index) {
+        return getDependenciesFieldBuilder().addBuilder(
+            index, org.intellimate.server.proto.App.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .intellimate.App dependencies = 3;</code>
+       */
+      public java.util.List<org.intellimate.server.proto.App.Builder> 
+           getDependenciesBuilderList() {
+        return getDependenciesFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.intellimate.server.proto.App, org.intellimate.server.proto.App.Builder, org.intellimate.server.proto.AppOrBuilder> 
+          getDependenciesFieldBuilder() {
+        if (dependenciesBuilder_ == null) {
+          dependenciesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.intellimate.server.proto.App, org.intellimate.server.proto.App.Builder, org.intellimate.server.proto.AppOrBuilder>(
+                  dependencies_,
+                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  getParentForChildren(),
+                  isClean());
+          dependencies_ = null;
+        }
+        return dependenciesBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
