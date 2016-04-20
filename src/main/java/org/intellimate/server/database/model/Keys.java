@@ -74,8 +74,8 @@ public class Keys {
 	public static final ForeignKey<AppRecord, UserRecord> APP_DEVELOPER = ForeignKeys0.APP_DEVELOPER;
 	public static final ForeignKey<AppActiveTagRecord, AppRecord> APP_ACTIVE_TAG_APP_REF = ForeignKeys0.APP_ACTIVE_TAG_APP_REF;
 	public static final ForeignKey<AppActiveTagRecord, AppTagRecord> APP_ACTIVE_TAG_TAG_REF = ForeignKeys0.APP_ACTIVE_TAG_TAG_REF;
-	public static final ForeignKey<AppDependencyRecord, AppRecord> APP_DEPENDENCY_SUBJECT = ForeignKeys0.APP_DEPENDENCY_SUBJECT;
-	public static final ForeignKey<AppDependencyRecord, AppRecord> APP_DEPENDENCY_DEPENDENCY = ForeignKeys0.APP_DEPENDENCY_DEPENDENCY;
+	public static final ForeignKey<AppDependencyRecord, AppInstanceRecord> APP_DEPENDENCY_SUBJECT = ForeignKeys0.APP_DEPENDENCY_SUBJECT;
+	public static final ForeignKey<AppDependencyRecord, AppInstanceRecord> APP_DEPENDENCY_DEPENDENCY = ForeignKeys0.APP_DEPENDENCY_DEPENDENCY;
 	public static final ForeignKey<AppInstanceRecord, AppVersionRecord> APP_INSTANCE_REF = ForeignKeys0.APP_INSTANCE_REF;
 	public static final ForeignKey<AppVersionRecord, AppRecord> VERSIONED_APP = ForeignKeys0.VERSIONED_APP;
 	public static final ForeignKey<IzouInstanceRecord, UserRecord> IZOU_INSTANCE_USER = ForeignKeys0.IZOU_INSTANCE_USER;
@@ -103,8 +103,8 @@ public class Keys {
 		public static final ForeignKey<AppRecord, UserRecord> APP_DEVELOPER = createForeignKey(org.intellimate.server.database.model.Keys.KEY_USER_PRIMARY, App.APP, App.APP.DEVELOPER);
 		public static final ForeignKey<AppActiveTagRecord, AppRecord> APP_ACTIVE_TAG_APP_REF = createForeignKey(org.intellimate.server.database.model.Keys.KEY_APP_PRIMARY, AppActiveTag.APP_ACTIVE_TAG, AppActiveTag.APP_ACTIVE_TAG.APP);
 		public static final ForeignKey<AppActiveTagRecord, AppTagRecord> APP_ACTIVE_TAG_TAG_REF = createForeignKey(org.intellimate.server.database.model.Keys.KEY_APP_TAG_PRIMARY, AppActiveTag.APP_ACTIVE_TAG, AppActiveTag.APP_ACTIVE_TAG.TAG);
-		public static final ForeignKey<AppDependencyRecord, AppRecord> APP_DEPENDENCY_SUBJECT = createForeignKey(org.intellimate.server.database.model.Keys.KEY_APP_PRIMARY, AppDependency.APP_DEPENDENCY, AppDependency.APP_DEPENDENCY.SUBJECT);
-		public static final ForeignKey<AppDependencyRecord, AppRecord> APP_DEPENDENCY_DEPENDENCY = createForeignKey(org.intellimate.server.database.model.Keys.KEY_APP_PRIMARY, AppDependency.APP_DEPENDENCY, AppDependency.APP_DEPENDENCY.DEPENDENCY);
+		public static final ForeignKey<AppDependencyRecord, AppInstanceRecord> APP_DEPENDENCY_SUBJECT = createForeignKey(org.intellimate.server.database.model.Keys.KEY_APP_INSTANCE_PRIMARY, AppDependency.APP_DEPENDENCY, AppDependency.APP_DEPENDENCY.SUBJECT);
+		public static final ForeignKey<AppDependencyRecord, AppInstanceRecord> APP_DEPENDENCY_DEPENDENCY = createForeignKey(org.intellimate.server.database.model.Keys.KEY_APP_INSTANCE_PRIMARY, AppDependency.APP_DEPENDENCY, AppDependency.APP_DEPENDENCY.DEPENDENCY);
 		public static final ForeignKey<AppInstanceRecord, AppVersionRecord> APP_INSTANCE_REF = createForeignKey(org.intellimate.server.database.model.Keys.KEY_APP_VERSION_PRIMARY, AppInstance.APP_INSTANCE, AppInstance.APP_INSTANCE.APP_REFERENCE);
 		public static final ForeignKey<AppVersionRecord, AppRecord> VERSIONED_APP = createForeignKey(org.intellimate.server.database.model.Keys.KEY_APP_PRIMARY, AppVersion.APP_VERSION, AppVersion.APP_VERSION.APP);
 		public static final ForeignKey<IzouInstanceRecord, UserRecord> IZOU_INSTANCE_USER = createForeignKey(org.intellimate.server.database.model.Keys.KEY_USER_PRIMARY, IzouInstance.IZOU_INSTANCE, IzouInstance.IZOU_INSTANCE.USER);
