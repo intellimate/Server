@@ -43,25 +43,44 @@ public interface AppOrBuilder extends
       getDescriptionBytes();
 
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+   * <code>repeated string tags = 5;</code>
+   */
+  com.google.protobuf.ProtocolStringList
+      getTagsList();
+  /**
+   * <code>repeated string tags = 5;</code>
+   */
+  int getTagsCount();
+  /**
+   * <code>repeated string tags = 5;</code>
+   */
+  java.lang.String getTags(int index);
+  /**
+   * <code>repeated string tags = 5;</code>
+   */
+  com.google.protobuf.ByteString
+      getTagsBytes(int index);
+
+  /**
+   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
    */
   java.util.List<org.intellimate.server.proto.App.AppVersion> 
       getVersionsList();
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
    */
   org.intellimate.server.proto.App.AppVersion getVersions(int index);
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
    */
   int getVersionsCount();
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
    */
   java.util.List<? extends org.intellimate.server.proto.App.AppVersionOrBuilder> 
       getVersionsOrBuilderList();
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
    */
   org.intellimate.server.proto.App.AppVersionOrBuilder getVersionsOrBuilder(
       int index);

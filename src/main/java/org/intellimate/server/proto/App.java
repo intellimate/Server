@@ -19,6 +19,7 @@ public  final class App extends
     name_ = "";
     developer_ = "";
     description_ = "";
+    tags_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     versions_ = java.util.Collections.emptyList();
   }
 
@@ -70,9 +71,18 @@ public  final class App extends
             break;
           }
           case 42: {
+            java.lang.String s = input.readStringRequireUtf8();
             if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
-              versions_ = new java.util.ArrayList<org.intellimate.server.proto.App.AppVersion>();
+              tags_ = new com.google.protobuf.LazyStringArrayList();
               mutable_bitField0_ |= 0x00000010;
+            }
+            tags_.add(s);
+            break;
+          }
+          case 50: {
+            if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+              versions_ = new java.util.ArrayList<org.intellimate.server.proto.App.AppVersion>();
+              mutable_bitField0_ |= 0x00000020;
             }
             versions_.add(input.readMessage(org.intellimate.server.proto.App.AppVersion.parser(), extensionRegistry));
             break;
@@ -87,6 +97,9 @@ public  final class App extends
               e.getMessage()).setUnfinishedMessage(this));
     } finally {
       if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+        tags_ = tags_.getUnmodifiableView();
+      }
+      if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
         versions_ = java.util.Collections.unmodifiableList(versions_);
       }
       makeExtensionsImmutable();
@@ -969,35 +982,64 @@ public  final class App extends
     }
   }
 
-  public static final int VERSIONS_FIELD_NUMBER = 5;
+  public static final int TAGS_FIELD_NUMBER = 5;
+  private com.google.protobuf.LazyStringList tags_;
+  /**
+   * <code>repeated string tags = 5;</code>
+   */
+  public com.google.protobuf.ProtocolStringList
+      getTagsList() {
+    return tags_;
+  }
+  /**
+   * <code>repeated string tags = 5;</code>
+   */
+  public int getTagsCount() {
+    return tags_.size();
+  }
+  /**
+   * <code>repeated string tags = 5;</code>
+   */
+  public java.lang.String getTags(int index) {
+    return tags_.get(index);
+  }
+  /**
+   * <code>repeated string tags = 5;</code>
+   */
+  public com.google.protobuf.ByteString
+      getTagsBytes(int index) {
+    return tags_.getByteString(index);
+  }
+
+  public static final int VERSIONS_FIELD_NUMBER = 6;
   private java.util.List<org.intellimate.server.proto.App.AppVersion> versions_;
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
    */
   public java.util.List<org.intellimate.server.proto.App.AppVersion> getVersionsList() {
     return versions_;
   }
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
    */
   public java.util.List<? extends org.intellimate.server.proto.App.AppVersionOrBuilder> 
       getVersionsOrBuilderList() {
     return versions_;
   }
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
    */
   public int getVersionsCount() {
     return versions_.size();
   }
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
    */
   public org.intellimate.server.proto.App.AppVersion getVersions(int index) {
     return versions_.get(index);
   }
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
    */
   public org.intellimate.server.proto.App.AppVersionOrBuilder getVersionsOrBuilder(
       int index) {
@@ -1028,8 +1070,11 @@ public  final class App extends
     if (!getDescriptionBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessage.writeString(output, 4, description_);
     }
+    for (int i = 0; i < tags_.size(); i++) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 5, tags_.getRaw(i));
+    }
     for (int i = 0; i < versions_.size(); i++) {
-      output.writeMessage(5, versions_.get(i));
+      output.writeMessage(6, versions_.get(i));
     }
   }
 
@@ -1051,9 +1096,17 @@ public  final class App extends
     if (!getDescriptionBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(4, description_);
     }
+    {
+      int dataSize = 0;
+      for (int i = 0; i < tags_.size(); i++) {
+        dataSize += computeStringSizeNoTag(tags_.getRaw(i));
+      }
+      size += dataSize;
+      size += 1 * getTagsList().size();
+    }
     for (int i = 0; i < versions_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(5, versions_.get(i));
+        .computeMessageSize(6, versions_.get(i));
     }
     memoizedSize = size;
     return size;
@@ -1175,9 +1228,11 @@ public  final class App extends
 
       description_ = "";
 
+      tags_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000010);
       if (versionsBuilder_ == null) {
         versions_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000020);
       } else {
         versionsBuilder_.clear();
       }
@@ -1209,10 +1264,15 @@ public  final class App extends
       result.name_ = name_;
       result.developer_ = developer_;
       result.description_ = description_;
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        tags_ = tags_.getUnmodifiableView();
+        bitField0_ = (bitField0_ & ~0x00000010);
+      }
+      result.tags_ = tags_;
       if (versionsBuilder_ == null) {
-        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
           versions_ = java.util.Collections.unmodifiableList(versions_);
-          bitField0_ = (bitField0_ & ~0x00000010);
+          bitField0_ = (bitField0_ & ~0x00000020);
         }
         result.versions_ = versions_;
       } else {
@@ -1249,11 +1309,21 @@ public  final class App extends
         description_ = other.description_;
         onChanged();
       }
+      if (!other.tags_.isEmpty()) {
+        if (tags_.isEmpty()) {
+          tags_ = other.tags_;
+          bitField0_ = (bitField0_ & ~0x00000010);
+        } else {
+          ensureTagsIsMutable();
+          tags_.addAll(other.tags_);
+        }
+        onChanged();
+      }
       if (versionsBuilder_ == null) {
         if (!other.versions_.isEmpty()) {
           if (versions_.isEmpty()) {
             versions_ = other.versions_;
-            bitField0_ = (bitField0_ & ~0x00000010);
+            bitField0_ = (bitField0_ & ~0x00000020);
           } else {
             ensureVersionsIsMutable();
             versions_.addAll(other.versions_);
@@ -1266,7 +1336,7 @@ public  final class App extends
             versionsBuilder_.dispose();
             versionsBuilder_ = null;
             versions_ = other.versions_;
-            bitField0_ = (bitField0_ & ~0x00000010);
+            bitField0_ = (bitField0_ & ~0x00000020);
             versionsBuilder_ = 
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  getVersionsFieldBuilder() : null;
@@ -1535,12 +1605,106 @@ public  final class App extends
       return this;
     }
 
+    private com.google.protobuf.LazyStringList tags_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    private void ensureTagsIsMutable() {
+      if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+        tags_ = new com.google.protobuf.LazyStringArrayList(tags_);
+        bitField0_ |= 0x00000010;
+       }
+    }
+    /**
+     * <code>repeated string tags = 5;</code>
+     */
+    public com.google.protobuf.ProtocolStringList
+        getTagsList() {
+      return tags_.getUnmodifiableView();
+    }
+    /**
+     * <code>repeated string tags = 5;</code>
+     */
+    public int getTagsCount() {
+      return tags_.size();
+    }
+    /**
+     * <code>repeated string tags = 5;</code>
+     */
+    public java.lang.String getTags(int index) {
+      return tags_.get(index);
+    }
+    /**
+     * <code>repeated string tags = 5;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTagsBytes(int index) {
+      return tags_.getByteString(index);
+    }
+    /**
+     * <code>repeated string tags = 5;</code>
+     */
+    public Builder setTags(
+        int index, java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTagsIsMutable();
+      tags_.set(index, value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string tags = 5;</code>
+     */
+    public Builder addTags(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTagsIsMutable();
+      tags_.add(value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string tags = 5;</code>
+     */
+    public Builder addAllTags(
+        java.lang.Iterable<java.lang.String> values) {
+      ensureTagsIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          values, tags_);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string tags = 5;</code>
+     */
+    public Builder clearTags() {
+      tags_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000010);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string tags = 5;</code>
+     */
+    public Builder addTagsBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      ensureTagsIsMutable();
+      tags_.add(value);
+      onChanged();
+      return this;
+    }
+
     private java.util.List<org.intellimate.server.proto.App.AppVersion> versions_ =
       java.util.Collections.emptyList();
     private void ensureVersionsIsMutable() {
-      if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (!((bitField0_ & 0x00000020) == 0x00000020)) {
         versions_ = new java.util.ArrayList<org.intellimate.server.proto.App.AppVersion>(versions_);
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000020;
        }
     }
 
@@ -1548,7 +1712,7 @@ public  final class App extends
         org.intellimate.server.proto.App.AppVersion, org.intellimate.server.proto.App.AppVersion.Builder, org.intellimate.server.proto.App.AppVersionOrBuilder> versionsBuilder_;
 
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public java.util.List<org.intellimate.server.proto.App.AppVersion> getVersionsList() {
       if (versionsBuilder_ == null) {
@@ -1558,7 +1722,7 @@ public  final class App extends
       }
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public int getVersionsCount() {
       if (versionsBuilder_ == null) {
@@ -1568,7 +1732,7 @@ public  final class App extends
       }
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public org.intellimate.server.proto.App.AppVersion getVersions(int index) {
       if (versionsBuilder_ == null) {
@@ -1578,7 +1742,7 @@ public  final class App extends
       }
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public Builder setVersions(
         int index, org.intellimate.server.proto.App.AppVersion value) {
@@ -1595,7 +1759,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public Builder setVersions(
         int index, org.intellimate.server.proto.App.AppVersion.Builder builderForValue) {
@@ -1609,7 +1773,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public Builder addVersions(org.intellimate.server.proto.App.AppVersion value) {
       if (versionsBuilder_ == null) {
@@ -1625,7 +1789,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public Builder addVersions(
         int index, org.intellimate.server.proto.App.AppVersion value) {
@@ -1642,7 +1806,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public Builder addVersions(
         org.intellimate.server.proto.App.AppVersion.Builder builderForValue) {
@@ -1656,7 +1820,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public Builder addVersions(
         int index, org.intellimate.server.proto.App.AppVersion.Builder builderForValue) {
@@ -1670,7 +1834,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public Builder addAllVersions(
         java.lang.Iterable<? extends org.intellimate.server.proto.App.AppVersion> values) {
@@ -1685,12 +1849,12 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public Builder clearVersions() {
       if (versionsBuilder_ == null) {
         versions_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000020);
         onChanged();
       } else {
         versionsBuilder_.clear();
@@ -1698,7 +1862,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public Builder removeVersions(int index) {
       if (versionsBuilder_ == null) {
@@ -1711,14 +1875,14 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public org.intellimate.server.proto.App.AppVersion.Builder getVersionsBuilder(
         int index) {
       return getVersionsFieldBuilder().getBuilder(index);
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public org.intellimate.server.proto.App.AppVersionOrBuilder getVersionsOrBuilder(
         int index) {
@@ -1728,7 +1892,7 @@ public  final class App extends
       }
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public java.util.List<? extends org.intellimate.server.proto.App.AppVersionOrBuilder> 
          getVersionsOrBuilderList() {
@@ -1739,14 +1903,14 @@ public  final class App extends
       }
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public org.intellimate.server.proto.App.AppVersion.Builder addVersionsBuilder() {
       return getVersionsFieldBuilder().addBuilder(
           org.intellimate.server.proto.App.AppVersion.getDefaultInstance());
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public org.intellimate.server.proto.App.AppVersion.Builder addVersionsBuilder(
         int index) {
@@ -1754,7 +1918,7 @@ public  final class App extends
           index, org.intellimate.server.proto.App.AppVersion.getDefaultInstance());
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 5;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
      */
     public java.util.List<org.intellimate.server.proto.App.AppVersion.Builder> 
          getVersionsBuilderList() {
@@ -1767,7 +1931,7 @@ public  final class App extends
         versionsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
             org.intellimate.server.proto.App.AppVersion, org.intellimate.server.proto.App.AppVersion.Builder, org.intellimate.server.proto.App.AppVersionOrBuilder>(
                 versions_,
-                ((bitField0_ & 0x00000010) == 0x00000010),
+                ((bitField0_ & 0x00000020) == 0x00000020),
                 getParentForChildren(),
                 isClean());
         versions_ = null;
