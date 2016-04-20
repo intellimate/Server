@@ -21,12 +21,12 @@ import java.util.Objects;
  * @author LeanderK
  * @version 1.0
  */
-public class Users {
+public class UsersResource {
     private final UserOperations userOperations;
     private final IzouInstanceOperations izouInstanceOperations;
     private final JWTHelper jwtHelper;
 
-    public Users(UserOperations userOperations, IzouInstanceOperations izouInstanceOperations, JWTHelper jwtHelper) {
+    public UsersResource(UserOperations userOperations, IzouInstanceOperations izouInstanceOperations, JWTHelper jwtHelper) {
         this.userOperations = userOperations;
         this.izouInstanceOperations = izouInstanceOperations;
         this.jwtHelper = jwtHelper;

@@ -8,8 +8,6 @@ import org.intellimate.server.database.operations.UserOperations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -17,13 +15,13 @@ import java.io.InputStream;
  * @author LeanderK
  * @version 1.0
  */
-public class Izou {
-    private static final Logger logger = LoggerFactory.getLogger(Izou.class);
+public class IzouResource {
+    private static final Logger logger = LoggerFactory.getLogger(IzouResource.class);
     private final IzouOperations izouOperations;
     private final UserOperations userOperations;
     private final FileStorage fileStorage;
 
-    public Izou(IzouOperations izouOperations, UserOperations userOperations, FileStorage fileStorage) {
+    public IzouResource(IzouOperations izouOperations, UserOperations userOperations, FileStorage fileStorage) {
         this.izouOperations = izouOperations;
         this.userOperations = userOperations;
         this.fileStorage = fileStorage;

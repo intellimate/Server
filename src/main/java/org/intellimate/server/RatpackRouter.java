@@ -9,7 +9,7 @@ import org.intellimate.server.jwt.Subject;
 import org.intellimate.server.proto.IzouInstance;
 import org.intellimate.server.proto.User;
 import org.intellimate.server.rest.Authentication;
-import org.intellimate.server.rest.Users;
+import org.intellimate.server.rest.UsersResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ratpack.error.ServerErrorHandler;
@@ -37,20 +37,20 @@ public class RatpackRouter implements RequestHelper {
     private final ErrorHandler errorHandler = new ErrorHandler();
     private final JWTHelper jwtHelper;
     private final Authentication authentication;
-    private final Users users;
+    private final UsersResource usersResource;
     private final int port;
 
     /**
      * creates a new Router.
      * @param jwtHelper the jwt-helper to use
      * @param authentication
-     * @param users
+     * @param usersResource
      * @param port the port the server is listening on
      */
-    public RatpackRouter(JWTHelper jwtHelper, Authentication authentication, Users users, int port) {
+    public RatpackRouter(JWTHelper jwtHelper, Authentication authentication, UsersResource usersResource, int port) {
         this.jwtHelper = jwtHelper;
         this.authentication = authentication;
-        this.users = users;
+        this.usersResource = usersResource;
         this.port = port;
     }
 
@@ -108,18 +108,18 @@ public class RatpackRouter implements RequestHelper {
                         .put("users", ctx -> {
                             ctx.render(
                                     merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
-                                            .map(message -> users.addUser(message.getUsername(), message.getEmail(), message.getPassword()))
+                                            .map(message -> usersResource.addUser(message.getUsername(), message.getEmail(), message.getPassword()))
                             );
                         })
                         .put("users/:id/izou", assureUser(ctx -> ctx.render(
                                 merge(ctx, IzouInstance.newBuilder(), Arrays.asList(IzouInstance.ID_FIELD_NUMBER, IzouInstance.TOKEN_FIELD_NUMBER))
-                                        .map(message -> users.addIzouInstance(assertParameterInt(ctx, "id"), message.getName(), ctx.get(JWTokenPassed.class)))
+                                        .map(message -> usersResource.addIzouInstance(assertParameterInt(ctx, "id"), message.getName(), ctx.get(JWTokenPassed.class)))
                         )))
                         .delete("users/:id", assureUser(ctx ->
-                                users.removeUser(assertParameterInt(ctx, "id"), ctx.get(JWTokenPassed.class)))
+                                usersResource.removeUser(assertParameterInt(ctx, "id"), ctx.get(JWTokenPassed.class)))
                         )
                         .delete("users/:id/izou/:izouid", assureUser(ctx ->
-                                users.removeIzouInstance(assertParameterInt(ctx, "id"), assertParameterInt(ctx, "izouid"), ctx.get(JWTokenPassed.class)))
+                                usersResource.removeIzouInstance(assertParameterInt(ctx, "id"), assertParameterInt(ctx, "izouid"), ctx.get(JWTokenPassed.class)))
                         )
                 )
         );
