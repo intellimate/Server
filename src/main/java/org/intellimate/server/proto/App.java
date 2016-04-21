@@ -19,6 +19,7 @@ public  final class App extends
     name_ = "";
     developer_ = "";
     description_ = "";
+    active_ = false;
     tags_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     versions_ = java.util.Collections.emptyList();
   }
@@ -70,19 +71,24 @@ public  final class App extends
             description_ = s;
             break;
           }
-          case 42: {
+          case 40: {
+
+            active_ = input.readBool();
+            break;
+          }
+          case 50: {
             java.lang.String s = input.readStringRequireUtf8();
-            if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+            if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
               tags_ = new com.google.protobuf.LazyStringArrayList();
-              mutable_bitField0_ |= 0x00000010;
+              mutable_bitField0_ |= 0x00000020;
             }
             tags_.add(s);
             break;
           }
-          case 50: {
-            if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+          case 58: {
+            if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
               versions_ = new java.util.ArrayList<org.intellimate.server.proto.App.AppVersion>();
-              mutable_bitField0_ |= 0x00000020;
+              mutable_bitField0_ |= 0x00000040;
             }
             versions_.add(input.readMessage(org.intellimate.server.proto.App.AppVersion.parser(), extensionRegistry));
             break;
@@ -96,10 +102,10 @@ public  final class App extends
           new com.google.protobuf.InvalidProtocolBufferException(
               e.getMessage()).setUnfinishedMessage(this));
     } finally {
-      if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
         tags_ = tags_.getUnmodifiableView();
       }
-      if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
         versions_ = java.util.Collections.unmodifiableList(versions_);
       }
       makeExtensionsImmutable();
@@ -132,35 +138,45 @@ public  final class App extends
         getVersionBytes();
 
     /**
-     * <code>optional string download_link = 2;</code>
+     * <code>optional string platform = 2;</code>
+     */
+    java.lang.String getPlatform();
+    /**
+     * <code>optional string platform = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getPlatformBytes();
+
+    /**
+     * <code>optional string download_link = 3;</code>
      */
     java.lang.String getDownloadLink();
     /**
-     * <code>optional string download_link = 2;</code>
+     * <code>optional string download_link = 3;</code>
      */
     com.google.protobuf.ByteString
         getDownloadLinkBytes();
 
     /**
-     * <code>repeated .intellimate.App dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 4;</code>
      */
     java.util.List<org.intellimate.server.proto.App> 
         getDependenciesList();
     /**
-     * <code>repeated .intellimate.App dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 4;</code>
      */
     org.intellimate.server.proto.App getDependencies(int index);
     /**
-     * <code>repeated .intellimate.App dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 4;</code>
      */
     int getDependenciesCount();
     /**
-     * <code>repeated .intellimate.App dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 4;</code>
      */
     java.util.List<? extends org.intellimate.server.proto.AppOrBuilder> 
         getDependenciesOrBuilderList();
     /**
-     * <code>repeated .intellimate.App dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 4;</code>
      */
     org.intellimate.server.proto.AppOrBuilder getDependenciesOrBuilder(
         int index);
@@ -178,6 +194,7 @@ public  final class App extends
     }
     private AppVersion() {
       version_ = "";
+      platform_ = "";
       downloadLink_ = "";
       dependencies_ = java.util.Collections.emptyList();
     }
@@ -215,13 +232,19 @@ public  final class App extends
             case 18: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              downloadLink_ = s;
+              platform_ = s;
               break;
             }
             case 26: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              downloadLink_ = s;
+              break;
+            }
+            case 34: {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
                 dependencies_ = new java.util.ArrayList<org.intellimate.server.proto.App>();
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000008;
               }
               dependencies_.add(input.readMessage(org.intellimate.server.proto.App.parser(), extensionRegistry));
               break;
@@ -235,7 +258,7 @@ public  final class App extends
             new com.google.protobuf.InvalidProtocolBufferException(
                 e.getMessage()).setUnfinishedMessage(this));
       } finally {
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
           dependencies_ = java.util.Collections.unmodifiableList(dependencies_);
         }
         makeExtensionsImmutable();
@@ -288,10 +311,44 @@ public  final class App extends
       }
     }
 
-    public static final int DOWNLOAD_LINK_FIELD_NUMBER = 2;
+    public static final int PLATFORM_FIELD_NUMBER = 2;
+    private volatile java.lang.Object platform_;
+    /**
+     * <code>optional string platform = 2;</code>
+     */
+    public java.lang.String getPlatform() {
+      java.lang.Object ref = platform_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        platform_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string platform = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getPlatformBytes() {
+      java.lang.Object ref = platform_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        platform_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int DOWNLOAD_LINK_FIELD_NUMBER = 3;
     private volatile java.lang.Object downloadLink_;
     /**
-     * <code>optional string download_link = 2;</code>
+     * <code>optional string download_link = 3;</code>
      */
     public java.lang.String getDownloadLink() {
       java.lang.Object ref = downloadLink_;
@@ -306,7 +363,7 @@ public  final class App extends
       }
     }
     /**
-     * <code>optional string download_link = 2;</code>
+     * <code>optional string download_link = 3;</code>
      */
     public com.google.protobuf.ByteString
         getDownloadLinkBytes() {
@@ -322,35 +379,35 @@ public  final class App extends
       }
     }
 
-    public static final int DEPENDENCIES_FIELD_NUMBER = 3;
+    public static final int DEPENDENCIES_FIELD_NUMBER = 4;
     private java.util.List<org.intellimate.server.proto.App> dependencies_;
     /**
-     * <code>repeated .intellimate.App dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 4;</code>
      */
     public java.util.List<org.intellimate.server.proto.App> getDependenciesList() {
       return dependencies_;
     }
     /**
-     * <code>repeated .intellimate.App dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 4;</code>
      */
     public java.util.List<? extends org.intellimate.server.proto.AppOrBuilder> 
         getDependenciesOrBuilderList() {
       return dependencies_;
     }
     /**
-     * <code>repeated .intellimate.App dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 4;</code>
      */
     public int getDependenciesCount() {
       return dependencies_.size();
     }
     /**
-     * <code>repeated .intellimate.App dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 4;</code>
      */
     public org.intellimate.server.proto.App getDependencies(int index) {
       return dependencies_.get(index);
     }
     /**
-     * <code>repeated .intellimate.App dependencies = 3;</code>
+     * <code>repeated .intellimate.App dependencies = 4;</code>
      */
     public org.intellimate.server.proto.AppOrBuilder getDependenciesOrBuilder(
         int index) {
@@ -372,11 +429,14 @@ public  final class App extends
       if (!getVersionBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessage.writeString(output, 1, version_);
       }
+      if (!getPlatformBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 2, platform_);
+      }
       if (!getDownloadLinkBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessage.writeString(output, 2, downloadLink_);
+        com.google.protobuf.GeneratedMessage.writeString(output, 3, downloadLink_);
       }
       for (int i = 0; i < dependencies_.size(); i++) {
-        output.writeMessage(3, dependencies_.get(i));
+        output.writeMessage(4, dependencies_.get(i));
       }
     }
 
@@ -388,12 +448,15 @@ public  final class App extends
       if (!getVersionBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessage.computeStringSize(1, version_);
       }
+      if (!getPlatformBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(2, platform_);
+      }
       if (!getDownloadLinkBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessage.computeStringSize(2, downloadLink_);
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(3, downloadLink_);
       }
       for (int i = 0; i < dependencies_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, dependencies_.get(i));
+          .computeMessageSize(4, dependencies_.get(i));
       }
       memoizedSize = size;
       return size;
@@ -509,11 +572,13 @@ public  final class App extends
         super.clear();
         version_ = "";
 
+        platform_ = "";
+
         downloadLink_ = "";
 
         if (dependenciesBuilder_ == null) {
           dependencies_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000008);
         } else {
           dependenciesBuilder_.clear();
         }
@@ -542,11 +607,12 @@ public  final class App extends
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         result.version_ = version_;
+        result.platform_ = platform_;
         result.downloadLink_ = downloadLink_;
         if (dependenciesBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          if (((bitField0_ & 0x00000008) == 0x00000008)) {
             dependencies_ = java.util.Collections.unmodifiableList(dependencies_);
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000008);
           }
           result.dependencies_ = dependencies_;
         } else {
@@ -572,6 +638,10 @@ public  final class App extends
           version_ = other.version_;
           onChanged();
         }
+        if (!other.getPlatform().isEmpty()) {
+          platform_ = other.platform_;
+          onChanged();
+        }
         if (!other.getDownloadLink().isEmpty()) {
           downloadLink_ = other.downloadLink_;
           onChanged();
@@ -580,7 +650,7 @@ public  final class App extends
           if (!other.dependencies_.isEmpty()) {
             if (dependencies_.isEmpty()) {
               dependencies_ = other.dependencies_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000008);
             } else {
               ensureDependenciesIsMutable();
               dependencies_.addAll(other.dependencies_);
@@ -593,7 +663,7 @@ public  final class App extends
               dependenciesBuilder_.dispose();
               dependenciesBuilder_ = null;
               dependencies_ = other.dependencies_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000008);
               dependenciesBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getDependenciesFieldBuilder() : null;
@@ -698,9 +768,78 @@ public  final class App extends
         return this;
       }
 
+      private java.lang.Object platform_ = "";
+      /**
+       * <code>optional string platform = 2;</code>
+       */
+      public java.lang.String getPlatform() {
+        java.lang.Object ref = platform_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          platform_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string platform = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getPlatformBytes() {
+        java.lang.Object ref = platform_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          platform_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string platform = 2;</code>
+       */
+      public Builder setPlatform(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        platform_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string platform = 2;</code>
+       */
+      public Builder clearPlatform() {
+        
+        platform_ = getDefaultInstance().getPlatform();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string platform = 2;</code>
+       */
+      public Builder setPlatformBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        platform_ = value;
+        onChanged();
+        return this;
+      }
+
       private java.lang.Object downloadLink_ = "";
       /**
-       * <code>optional string download_link = 2;</code>
+       * <code>optional string download_link = 3;</code>
        */
       public java.lang.String getDownloadLink() {
         java.lang.Object ref = downloadLink_;
@@ -715,7 +854,7 @@ public  final class App extends
         }
       }
       /**
-       * <code>optional string download_link = 2;</code>
+       * <code>optional string download_link = 3;</code>
        */
       public com.google.protobuf.ByteString
           getDownloadLinkBytes() {
@@ -731,7 +870,7 @@ public  final class App extends
         }
       }
       /**
-       * <code>optional string download_link = 2;</code>
+       * <code>optional string download_link = 3;</code>
        */
       public Builder setDownloadLink(
           java.lang.String value) {
@@ -744,7 +883,7 @@ public  final class App extends
         return this;
       }
       /**
-       * <code>optional string download_link = 2;</code>
+       * <code>optional string download_link = 3;</code>
        */
       public Builder clearDownloadLink() {
         
@@ -753,7 +892,7 @@ public  final class App extends
         return this;
       }
       /**
-       * <code>optional string download_link = 2;</code>
+       * <code>optional string download_link = 3;</code>
        */
       public Builder setDownloadLinkBytes(
           com.google.protobuf.ByteString value) {
@@ -770,9 +909,9 @@ public  final class App extends
       private java.util.List<org.intellimate.server.proto.App> dependencies_ =
         java.util.Collections.emptyList();
       private void ensureDependenciesIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
           dependencies_ = new java.util.ArrayList<org.intellimate.server.proto.App>(dependencies_);
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000008;
          }
       }
 
@@ -780,7 +919,7 @@ public  final class App extends
           org.intellimate.server.proto.App, org.intellimate.server.proto.App.Builder, org.intellimate.server.proto.AppOrBuilder> dependenciesBuilder_;
 
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public java.util.List<org.intellimate.server.proto.App> getDependenciesList() {
         if (dependenciesBuilder_ == null) {
@@ -790,7 +929,7 @@ public  final class App extends
         }
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public int getDependenciesCount() {
         if (dependenciesBuilder_ == null) {
@@ -800,7 +939,7 @@ public  final class App extends
         }
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public org.intellimate.server.proto.App getDependencies(int index) {
         if (dependenciesBuilder_ == null) {
@@ -810,7 +949,7 @@ public  final class App extends
         }
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public Builder setDependencies(
           int index, org.intellimate.server.proto.App value) {
@@ -827,7 +966,7 @@ public  final class App extends
         return this;
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public Builder setDependencies(
           int index, org.intellimate.server.proto.App.Builder builderForValue) {
@@ -841,7 +980,7 @@ public  final class App extends
         return this;
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public Builder addDependencies(org.intellimate.server.proto.App value) {
         if (dependenciesBuilder_ == null) {
@@ -857,7 +996,7 @@ public  final class App extends
         return this;
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public Builder addDependencies(
           int index, org.intellimate.server.proto.App value) {
@@ -874,7 +1013,7 @@ public  final class App extends
         return this;
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public Builder addDependencies(
           org.intellimate.server.proto.App.Builder builderForValue) {
@@ -888,7 +1027,7 @@ public  final class App extends
         return this;
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public Builder addDependencies(
           int index, org.intellimate.server.proto.App.Builder builderForValue) {
@@ -902,7 +1041,7 @@ public  final class App extends
         return this;
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public Builder addAllDependencies(
           java.lang.Iterable<? extends org.intellimate.server.proto.App> values) {
@@ -917,12 +1056,12 @@ public  final class App extends
         return this;
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public Builder clearDependencies() {
         if (dependenciesBuilder_ == null) {
           dependencies_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000008);
           onChanged();
         } else {
           dependenciesBuilder_.clear();
@@ -930,7 +1069,7 @@ public  final class App extends
         return this;
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public Builder removeDependencies(int index) {
         if (dependenciesBuilder_ == null) {
@@ -943,14 +1082,14 @@ public  final class App extends
         return this;
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public org.intellimate.server.proto.App.Builder getDependenciesBuilder(
           int index) {
         return getDependenciesFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public org.intellimate.server.proto.AppOrBuilder getDependenciesOrBuilder(
           int index) {
@@ -960,7 +1099,7 @@ public  final class App extends
         }
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public java.util.List<? extends org.intellimate.server.proto.AppOrBuilder> 
            getDependenciesOrBuilderList() {
@@ -971,14 +1110,14 @@ public  final class App extends
         }
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public org.intellimate.server.proto.App.Builder addDependenciesBuilder() {
         return getDependenciesFieldBuilder().addBuilder(
             org.intellimate.server.proto.App.getDefaultInstance());
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public org.intellimate.server.proto.App.Builder addDependenciesBuilder(
           int index) {
@@ -986,7 +1125,7 @@ public  final class App extends
             index, org.intellimate.server.proto.App.getDefaultInstance());
       }
       /**
-       * <code>repeated .intellimate.App dependencies = 3;</code>
+       * <code>repeated .intellimate.App dependencies = 4;</code>
        */
       public java.util.List<org.intellimate.server.proto.App.Builder> 
            getDependenciesBuilderList() {
@@ -999,7 +1138,7 @@ public  final class App extends
           dependenciesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.intellimate.server.proto.App, org.intellimate.server.proto.App.Builder, org.intellimate.server.proto.AppOrBuilder>(
                   dependencies_,
-                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  ((bitField0_ & 0x00000008) == 0x00000008),
                   getParentForChildren(),
                   isClean());
           dependencies_ = null;
@@ -1176,64 +1315,73 @@ public  final class App extends
     }
   }
 
-  public static final int TAGS_FIELD_NUMBER = 5;
+  public static final int ACTIVE_FIELD_NUMBER = 5;
+  private boolean active_;
+  /**
+   * <code>optional bool active = 5;</code>
+   */
+  public boolean getActive() {
+    return active_;
+  }
+
+  public static final int TAGS_FIELD_NUMBER = 6;
   private com.google.protobuf.LazyStringList tags_;
   /**
-   * <code>repeated string tags = 5;</code>
+   * <code>repeated string tags = 6;</code>
    */
   public com.google.protobuf.ProtocolStringList
       getTagsList() {
     return tags_;
   }
   /**
-   * <code>repeated string tags = 5;</code>
+   * <code>repeated string tags = 6;</code>
    */
   public int getTagsCount() {
     return tags_.size();
   }
   /**
-   * <code>repeated string tags = 5;</code>
+   * <code>repeated string tags = 6;</code>
    */
   public java.lang.String getTags(int index) {
     return tags_.get(index);
   }
   /**
-   * <code>repeated string tags = 5;</code>
+   * <code>repeated string tags = 6;</code>
    */
   public com.google.protobuf.ByteString
       getTagsBytes(int index) {
     return tags_.getByteString(index);
   }
 
-  public static final int VERSIONS_FIELD_NUMBER = 6;
+  public static final int VERSIONS_FIELD_NUMBER = 7;
   private java.util.List<org.intellimate.server.proto.App.AppVersion> versions_;
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
    */
   public java.util.List<org.intellimate.server.proto.App.AppVersion> getVersionsList() {
     return versions_;
   }
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
    */
   public java.util.List<? extends org.intellimate.server.proto.App.AppVersionOrBuilder> 
       getVersionsOrBuilderList() {
     return versions_;
   }
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
    */
   public int getVersionsCount() {
     return versions_.size();
   }
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
    */
   public org.intellimate.server.proto.App.AppVersion getVersions(int index) {
     return versions_.get(index);
   }
   /**
-   * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+   * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
    */
   public org.intellimate.server.proto.App.AppVersionOrBuilder getVersionsOrBuilder(
       int index) {
@@ -1264,11 +1412,14 @@ public  final class App extends
     if (!getDescriptionBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessage.writeString(output, 4, description_);
     }
+    if (active_ != false) {
+      output.writeBool(5, active_);
+    }
     for (int i = 0; i < tags_.size(); i++) {
-      com.google.protobuf.GeneratedMessage.writeString(output, 5, tags_.getRaw(i));
+      com.google.protobuf.GeneratedMessage.writeString(output, 6, tags_.getRaw(i));
     }
     for (int i = 0; i < versions_.size(); i++) {
-      output.writeMessage(6, versions_.get(i));
+      output.writeMessage(7, versions_.get(i));
     }
   }
 
@@ -1290,6 +1441,10 @@ public  final class App extends
     if (!getDescriptionBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(4, description_);
     }
+    if (active_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(5, active_);
+    }
     {
       int dataSize = 0;
       for (int i = 0; i < tags_.size(); i++) {
@@ -1300,7 +1455,7 @@ public  final class App extends
     }
     for (int i = 0; i < versions_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(6, versions_.get(i));
+        .computeMessageSize(7, versions_.get(i));
     }
     memoizedSize = size;
     return size;
@@ -1422,11 +1577,13 @@ public  final class App extends
 
       description_ = "";
 
+      active_ = false;
+
       tags_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000010);
+      bitField0_ = (bitField0_ & ~0x00000020);
       if (versionsBuilder_ == null) {
         versions_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000040);
       } else {
         versionsBuilder_.clear();
       }
@@ -1458,15 +1615,16 @@ public  final class App extends
       result.name_ = name_;
       result.developer_ = developer_;
       result.description_ = description_;
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      result.active_ = active_;
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
         tags_ = tags_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000020);
       }
       result.tags_ = tags_;
       if (versionsBuilder_ == null) {
-        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
           versions_ = java.util.Collections.unmodifiableList(versions_);
-          bitField0_ = (bitField0_ & ~0x00000020);
+          bitField0_ = (bitField0_ & ~0x00000040);
         }
         result.versions_ = versions_;
       } else {
@@ -1503,10 +1661,13 @@ public  final class App extends
         description_ = other.description_;
         onChanged();
       }
+      if (other.getActive() != false) {
+        setActive(other.getActive());
+      }
       if (!other.tags_.isEmpty()) {
         if (tags_.isEmpty()) {
           tags_ = other.tags_;
-          bitField0_ = (bitField0_ & ~0x00000010);
+          bitField0_ = (bitField0_ & ~0x00000020);
         } else {
           ensureTagsIsMutable();
           tags_.addAll(other.tags_);
@@ -1517,7 +1678,7 @@ public  final class App extends
         if (!other.versions_.isEmpty()) {
           if (versions_.isEmpty()) {
             versions_ = other.versions_;
-            bitField0_ = (bitField0_ & ~0x00000020);
+            bitField0_ = (bitField0_ & ~0x00000040);
           } else {
             ensureVersionsIsMutable();
             versions_.addAll(other.versions_);
@@ -1530,7 +1691,7 @@ public  final class App extends
             versionsBuilder_.dispose();
             versionsBuilder_ = null;
             versions_ = other.versions_;
-            bitField0_ = (bitField0_ & ~0x00000020);
+            bitField0_ = (bitField0_ & ~0x00000040);
             versionsBuilder_ = 
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                  getVersionsFieldBuilder() : null;
@@ -1799,41 +1960,67 @@ public  final class App extends
       return this;
     }
 
+    private boolean active_ ;
+    /**
+     * <code>optional bool active = 5;</code>
+     */
+    public boolean getActive() {
+      return active_;
+    }
+    /**
+     * <code>optional bool active = 5;</code>
+     */
+    public Builder setActive(boolean value) {
+      
+      active_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>optional bool active = 5;</code>
+     */
+    public Builder clearActive() {
+      
+      active_ = false;
+      onChanged();
+      return this;
+    }
+
     private com.google.protobuf.LazyStringList tags_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     private void ensureTagsIsMutable() {
-      if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (!((bitField0_ & 0x00000020) == 0x00000020)) {
         tags_ = new com.google.protobuf.LazyStringArrayList(tags_);
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000020;
        }
     }
     /**
-     * <code>repeated string tags = 5;</code>
+     * <code>repeated string tags = 6;</code>
      */
     public com.google.protobuf.ProtocolStringList
         getTagsList() {
       return tags_.getUnmodifiableView();
     }
     /**
-     * <code>repeated string tags = 5;</code>
+     * <code>repeated string tags = 6;</code>
      */
     public int getTagsCount() {
       return tags_.size();
     }
     /**
-     * <code>repeated string tags = 5;</code>
+     * <code>repeated string tags = 6;</code>
      */
     public java.lang.String getTags(int index) {
       return tags_.get(index);
     }
     /**
-     * <code>repeated string tags = 5;</code>
+     * <code>repeated string tags = 6;</code>
      */
     public com.google.protobuf.ByteString
         getTagsBytes(int index) {
       return tags_.getByteString(index);
     }
     /**
-     * <code>repeated string tags = 5;</code>
+     * <code>repeated string tags = 6;</code>
      */
     public Builder setTags(
         int index, java.lang.String value) {
@@ -1846,7 +2033,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated string tags = 5;</code>
+     * <code>repeated string tags = 6;</code>
      */
     public Builder addTags(
         java.lang.String value) {
@@ -1859,7 +2046,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated string tags = 5;</code>
+     * <code>repeated string tags = 6;</code>
      */
     public Builder addAllTags(
         java.lang.Iterable<java.lang.String> values) {
@@ -1870,16 +2057,16 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated string tags = 5;</code>
+     * <code>repeated string tags = 6;</code>
      */
     public Builder clearTags() {
       tags_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000010);
+      bitField0_ = (bitField0_ & ~0x00000020);
       onChanged();
       return this;
     }
     /**
-     * <code>repeated string tags = 5;</code>
+     * <code>repeated string tags = 6;</code>
      */
     public Builder addTagsBytes(
         com.google.protobuf.ByteString value) {
@@ -1896,9 +2083,9 @@ public  final class App extends
     private java.util.List<org.intellimate.server.proto.App.AppVersion> versions_ =
       java.util.Collections.emptyList();
     private void ensureVersionsIsMutable() {
-      if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (!((bitField0_ & 0x00000040) == 0x00000040)) {
         versions_ = new java.util.ArrayList<org.intellimate.server.proto.App.AppVersion>(versions_);
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000040;
        }
     }
 
@@ -1906,7 +2093,7 @@ public  final class App extends
         org.intellimate.server.proto.App.AppVersion, org.intellimate.server.proto.App.AppVersion.Builder, org.intellimate.server.proto.App.AppVersionOrBuilder> versionsBuilder_;
 
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public java.util.List<org.intellimate.server.proto.App.AppVersion> getVersionsList() {
       if (versionsBuilder_ == null) {
@@ -1916,7 +2103,7 @@ public  final class App extends
       }
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public int getVersionsCount() {
       if (versionsBuilder_ == null) {
@@ -1926,7 +2113,7 @@ public  final class App extends
       }
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public org.intellimate.server.proto.App.AppVersion getVersions(int index) {
       if (versionsBuilder_ == null) {
@@ -1936,7 +2123,7 @@ public  final class App extends
       }
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public Builder setVersions(
         int index, org.intellimate.server.proto.App.AppVersion value) {
@@ -1953,7 +2140,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public Builder setVersions(
         int index, org.intellimate.server.proto.App.AppVersion.Builder builderForValue) {
@@ -1967,7 +2154,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public Builder addVersions(org.intellimate.server.proto.App.AppVersion value) {
       if (versionsBuilder_ == null) {
@@ -1983,7 +2170,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public Builder addVersions(
         int index, org.intellimate.server.proto.App.AppVersion value) {
@@ -2000,7 +2187,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public Builder addVersions(
         org.intellimate.server.proto.App.AppVersion.Builder builderForValue) {
@@ -2014,7 +2201,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public Builder addVersions(
         int index, org.intellimate.server.proto.App.AppVersion.Builder builderForValue) {
@@ -2028,7 +2215,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public Builder addAllVersions(
         java.lang.Iterable<? extends org.intellimate.server.proto.App.AppVersion> values) {
@@ -2043,12 +2230,12 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public Builder clearVersions() {
       if (versionsBuilder_ == null) {
         versions_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000040);
         onChanged();
       } else {
         versionsBuilder_.clear();
@@ -2056,7 +2243,7 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public Builder removeVersions(int index) {
       if (versionsBuilder_ == null) {
@@ -2069,14 +2256,14 @@ public  final class App extends
       return this;
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public org.intellimate.server.proto.App.AppVersion.Builder getVersionsBuilder(
         int index) {
       return getVersionsFieldBuilder().getBuilder(index);
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public org.intellimate.server.proto.App.AppVersionOrBuilder getVersionsOrBuilder(
         int index) {
@@ -2086,7 +2273,7 @@ public  final class App extends
       }
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public java.util.List<? extends org.intellimate.server.proto.App.AppVersionOrBuilder> 
          getVersionsOrBuilderList() {
@@ -2097,14 +2284,14 @@ public  final class App extends
       }
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public org.intellimate.server.proto.App.AppVersion.Builder addVersionsBuilder() {
       return getVersionsFieldBuilder().addBuilder(
           org.intellimate.server.proto.App.AppVersion.getDefaultInstance());
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public org.intellimate.server.proto.App.AppVersion.Builder addVersionsBuilder(
         int index) {
@@ -2112,7 +2299,7 @@ public  final class App extends
           index, org.intellimate.server.proto.App.AppVersion.getDefaultInstance());
     }
     /**
-     * <code>repeated .intellimate.App.AppVersion versions = 6;</code>
+     * <code>repeated .intellimate.App.AppVersion versions = 7;</code>
      */
     public java.util.List<org.intellimate.server.proto.App.AppVersion.Builder> 
          getVersionsBuilderList() {
@@ -2125,7 +2312,7 @@ public  final class App extends
         versionsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
             org.intellimate.server.proto.App.AppVersion, org.intellimate.server.proto.App.AppVersion.Builder, org.intellimate.server.proto.App.AppVersionOrBuilder>(
                 versions_,
-                ((bitField0_ & 0x00000020) == 0x00000020),
+                ((bitField0_ & 0x00000040) == 0x00000040),
                 getParentForChildren(),
                 isClean());
         versions_ = null;
