@@ -34,6 +34,7 @@ public class RatpackRouter implements RequestHelper {
     private static final Logger logger = LoggerFactory.getLogger(RatpackRouter.class);
     private final JsonFormat.Parser parser = JsonFormat.parser();
     private final MessageRenderer messageRenderer = new MessageRenderer();
+    private final PaginatedRenderer paginatedRenderer = new PaginatedRenderer();
     private final ErrorHandler errorHandler = new ErrorHandler();
     private final JWTHelper jwtHelper;
     private final Authentication authentication;
@@ -57,6 +58,7 @@ public class RatpackRouter implements RequestHelper {
     public void init() throws Exception {
         Registry registry = Registry.builder()
                 .add(messageRenderer)
+                .add(paginatedRenderer)
                 .add(ServerErrorHandler.class, errorHandler)
                 .build();
         RatpackServer.start(server -> server
