@@ -4,6 +4,7 @@ import org.intellimate.server.BadRequestException;
 import org.intellimate.server.NotFoundException;
 import org.intellimate.server.data.FileStorage;
 import org.intellimate.server.database.model.Tables;
+import org.intellimate.server.database.model.tables.records.AppInstanceRecord;
 import org.intellimate.server.database.model.tables.records.AppRecord;
 import org.intellimate.server.database.model.tables.records.AppVersionRecord;
 import org.intellimate.server.database.model.tables.records.UserRecord;
@@ -12,7 +13,9 @@ import org.intellimate.server.database.operations.UserOperations;
 import org.intellimate.server.proto.App;
 import org.intellimate.server.proto.AppList;
 import org.jooq.Record;
+import org.jooq.lambda.tuple.Tuple2;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -69,6 +72,12 @@ public class AppResource {
 
     public App.AppVersion getAppVersion(int appID, int major, int minor, int patch, List<String> platforms) {
         return appOperations.getAppVersion(appID, major, minor, patch, platforms)
+                .map(appVersion -> {
+                    return appVersion
+                            .toBuilder()
+                            .setDownloadLink(fileStorage.getLink(String.format("appinstance%s", appVersion.getDownloadLink())))
+                            .build();
+                })
                 .orElseThrow(() -> new NotFoundException(String.format("App-Version %d.%d.%d for app %d not found",
                         major, minor, patch, appID)));
     }
@@ -94,10 +103,47 @@ public class AppResource {
             throw new BadRequestException("name must not be empty");
         }
 
+        return appOperations.insertApp(userID, app);
+    }
+
+    public App updateApp(int userID, int appID, App app) {
+        UserRecord user = userOperations.getUser(userID)
+                .orElseThrow(() -> new BadRequestException(String.format("invalid user %d", userID)));
+        if (app.getDescription().isEmpty()) {
+            throw new BadRequestException("description must not be empty");
+        }
+
         if (app.getName().isEmpty()) {
             throw new BadRequestException("name must not be empty");
         }
 
-        return null;
+        App toUpdate = app.toBuilder().setId(appID).build();
+
+        Tuple2<App, List<AppInstanceRecord>> result = appOperations.updateApp(userID, toUpdate);
+
+        List<AppInstanceRecord> toDelete = result.v2;
+
+        toDelete.forEach(instance -> {
+            fileStorage.delete(String.format("appinstance%d", instance.getIdAppInstance()));
+        });
+
+        return result.v1;
+    }
+
+    public String putInstance(int userID, int app, int major, int minor, int patch, String platform, InputStream stream) {
+        UserRecord user = userOperations.getUser(userID)
+                .orElseThrow(() -> new BadRequestException(String.format("invalid user %d", userID)));
+        Integer developer = appOperations.getApp(app)
+                .orElseThrow(() -> new BadRequestException(String.format("invalid app %d", app)))
+                .v1.getDeveloper();
+        if (developer != userID) {
+            throw new BadRequestException(String.format("user %d is not developer for app %d", userID, app));
+        }
+        AppInstanceRecord appInstanceRecord = appOperations.getAppInstance(app, major, minor, patch, platform)
+                .orElseThrow(() -> new BadRequestException("instance is not existing"));
+        String name = String.format("appinstance%d", appInstanceRecord.getIdAppInstance());
+        fileStorage.save(stream, name);
+        appOperations.setActive(app, appInstanceRecord.getIdAppInstance());
+        return fileStorage.getLink(name);
     }
 }
