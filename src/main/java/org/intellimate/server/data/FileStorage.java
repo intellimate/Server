@@ -8,5 +8,6 @@ import java.io.InputStream;
  */
 public interface FileStorage {
     void save(InputStream inputStream, String name);
+    void delete(String name);
     String getLink(String name);
 }
