@@ -34,7 +34,7 @@ public class AppOperations extends AbstractOperations {
         Set<String> queryPlatforms = new HashSet<>(platforms);
         queryPlatforms.add(JAVA_PLATFORM);
         Result<Record> app = create.select(APP_VERSION.fields())
-                .select(APP_INSTANCE.PLATFORM)
+                .select(APP_INSTANCE.PLATFORM, APP_INSTANCE.ID_APP_INSTANCE)
                 .select(APP_DEPENDENCY.DEPENDENCY)
                 .from(APP_VERSION)
                 .join(APP_INSTANCE).on(
@@ -82,6 +82,7 @@ public class AppOperations extends AbstractOperations {
 
         return Optional.of(App.AppVersion.newBuilder()
                 .setVersion(String.format("%d.%d.%d", major, minor, patch))
+                .setDownloadLink(app.get(0).getValue(APP_INSTANCE.ID_APP_INSTANCE)+"")
                 .addAllDependencies(dependencies)
                 .build());
     }
@@ -275,7 +276,7 @@ public class AppOperations extends AbstractOperations {
     }
 
     //TODO: same version mutiple times, version max 3 char long
-    public App updateApp(int user, App app) {
+    public Tuple2<App, List<AppInstanceRecord>> updateApp(int user, App app) {
         AppRecord appRecord = new AppRecord(app.getId(), user, app.getName(), app.getDescription(), null);
         AppRecord updated = create.update(APP)
                 .set(appRecord)
@@ -311,7 +312,7 @@ public class AppOperations extends AbstractOperations {
                     .execute();
             return new Tuple2<>(toDeleteFromData, toInsert);
         });
-        Result<AppInstanceRecord> toDeleteFromData = result.v1;
+        List<AppInstanceRecord> toDeleteFromData = result.v1;
         List<App.AppVersion> toInsert = result.v2;
         List<App.AppVersion> versions = toInsert.stream()
                 .map(appVersion -> {
@@ -340,13 +341,42 @@ public class AppOperations extends AbstractOperations {
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        return App.newBuilder()
+        return new Tuple2<>(App.newBuilder()
                 .setId(updated.getIdApp())
                 .setName(app.getName())
                 .setActive(false)
                 .setDeveloper(app.getDeveloper())
                 .setDescription(app.getDescription())
                 .addAllVersions(versions)
-                .build();
+                .build(), toDeleteFromData);
+    }
+
+    public Optional<AppInstanceRecord> getAppInstance(int app, int major, int minor, int patch, String platform) {
+        return create.select(APP_INSTANCE.fields())
+                .from(APP_VERSION)
+                .innerJoin(APP_INSTANCE).on(
+                        APP_VERSION.ID_APP_VERSION.eq(APP_INSTANCE.APP_REFERENCE)
+                                .and(APP_INSTANCE.PLATFORM.eq(platform))
+                )
+                .where(
+                        APP_VERSION.APP.eq(app)
+                                .and(APP_VERSION.MAJOR.eq(major))
+                                .and(APP_VERSION.MINOR.eq(minor))
+                                .and(APP_VERSION.PATCH.eq(patch))
+                )
+                .fetchOptional()
+                .map(record -> record.into(APP_INSTANCE));
+    }
+
+    public void setActive(int app, int instanceID) {
+        create.update(APP_INSTANCE)
+                .set(APP_INSTANCE.ACTIVE, true)
+                .where(APP_INSTANCE.ID_APP_INSTANCE.eq(instanceID))
+                .execute();
+
+        create.update(APP)
+                .set(APP.ACTIVE, true)
+                .where(APP.ID_APP.equals(app))
+                .execute();
     }
 }
