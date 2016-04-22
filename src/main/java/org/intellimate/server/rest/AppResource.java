@@ -40,7 +40,7 @@ public class AppResource {
         return appOperations.getApp(appID)
                 .map(data -> {
                     List<App.AppVersion> versions = appOperations.getVersions(appID, platforms).stream()
-                            .map((Function<Record, App.AppVersion>) record -> {
+                            .map(record -> {
                                 AppVersionRecord versionRecord = record.into(Tables.APP_VERSION);
                                 return App.AppVersion.newBuilder()
                                         .setVersion(String.format("%d.%d.%d",
