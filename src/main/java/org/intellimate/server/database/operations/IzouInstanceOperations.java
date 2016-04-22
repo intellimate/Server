@@ -17,7 +17,7 @@ public class IzouInstanceOperations extends AbstractOperations {
      * creates a new IzouInstanceOperations
      * @param context the create to use
      */
-    protected IzouInstanceOperations(DSLContext context) {
+    public IzouInstanceOperations(DSLContext context) {
         super(context);
     }
 

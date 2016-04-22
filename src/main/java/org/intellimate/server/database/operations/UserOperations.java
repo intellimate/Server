@@ -13,7 +13,7 @@ import static org.intellimate.server.database.model.Tables.*;
  * @version 1.0
  */
 public class UserOperations extends AbstractOperations {
-    protected UserOperations(DSLContext create) {
+    public UserOperations(DSLContext create) {
         super(create);
     }
 

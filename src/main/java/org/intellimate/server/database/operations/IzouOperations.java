@@ -13,7 +13,7 @@ import static org.intellimate.server.database.model.Tables.*;
  * @version 1.0
  */
 public class IzouOperations extends AbstractOperations {
-    protected IzouOperations(DSLContext create) {
+    public IzouOperations(DSLContext create) {
         super(create);
     }
     public IzouRecord insertIzou(int major, int minor, int patch, boolean active) {

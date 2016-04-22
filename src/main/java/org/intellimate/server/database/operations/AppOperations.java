@@ -26,7 +26,7 @@ import static org.intellimate.server.database.model.Tables.*;
 public class AppOperations extends AbstractOperations {
     private final String JAVA_PLATFORM = "java";
 
-    protected AppOperations(DSLContext create) {
+    public AppOperations(DSLContext create) {
         super(create);
     }
 
