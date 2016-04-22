@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ratpack.error.ServerErrorHandler;
 import ratpack.exec.Promise;
+import ratpack.handling.Chain;
 import ratpack.handling.Context;
 import ratpack.handling.Handler;
 import ratpack.http.TypedData;
@@ -45,6 +46,7 @@ public class RatpackRouter implements RequestHelper {
     private final IzouResource izouResource;
     private final AppResource appResource;
     private final int port;
+    private final String fileDir;
 
     /**
      * creates a new Router.
@@ -54,14 +56,16 @@ public class RatpackRouter implements RequestHelper {
      * @param izouResource
      * @param appResource
      * @param port the port the server is listening on
+     * @param fileDir
      */
-    public RatpackRouter(JWTHelper jwtHelper, Authentication authentication, UsersResource usersResource, IzouResource izouResource, AppResource appResource, int port) {
+    public RatpackRouter(JWTHelper jwtHelper, Authentication authentication, UsersResource usersResource, IzouResource izouResource, AppResource appResource, int port, String fileDir) {
         this.jwtHelper = jwtHelper;
         this.authentication = authentication;
         this.usersResource = usersResource;
         this.izouResource = izouResource;
         this.appResource = appResource;
         this.port = port;
+        this.fileDir = fileDir;
     }
 
     public void init() throws Exception {
@@ -73,146 +77,153 @@ public class RatpackRouter implements RequestHelper {
         RatpackServer.start(server -> server
                 .serverConfig(ServerConfig.embedded().port(port))
                 .registry(registry)
-                .handlers(chain -> chain
-                        .all(ctx -> {
-                            ctx.getResponse().getHeaders().add("access-control-allow-origin", "*");
-                            ctx.getResponse().getHeaders().add("access-control-allow-methods", "GET,PUT,POST,PATCH,DELETE,OPTIONS");
-                            ctx.getResponse().getHeaders().add("access-control-allow-credentials", "true");
-                            ctx.getResponse().getHeaders().add("access-control-allow-headers", "Authorization,Content-Type");
-                            ctx.getResponse().getHeaders().add("access-control-expose-headers", "Link,Location");
-                            ctx.getResponse().getHeaders().add("access-control-max-age", "86400");
-                            String jwtHeader = ctx.getRequest().getHeaders().get("Authorization");
-                            if (jwtHeader == null) {
-                                jwtHeader = ctx.getRequest().getQueryParams().get("Authorization");
-                            }
-                            if (jwtHeader != null) {
-                                if (!jwtHeader.matches("Bearer .*")) {
-                                    throw new BadRequestException("Authorization header must contain Bearer token in the format <Bearer JWT>");
-                                }
-                                String jwt = jwtHeader.substring("Bearer ".length());
-                                JWTokenPassed jwTokenPassed = jwtHelper.parseToken(jwt);
-                                ctx.next(Registry.single(JWTokenPassed.class, jwTokenPassed));
-                            } else {
-                                ctx.next();
-                            }
-                        })
-                        .options(ctx -> {
-                            ctx.getResponse().status(204);
-                            ctx.getResponse().contentType("text/plain");
-                            ctx.render("");
-                        })
-                        .post("authentication/izou", assureIzou(ctx -> {
-                            ctx.render(authentication.refresh(ctx.get(JWTokenPassed.class).getId()));
-                        }))
-                        .post("authentication/users", ctx -> {
-                            ctx.render(
-                                    merge(ctx, User.newBuilder(), Arrays.asList(User.ID_FIELD_NUMBER, User.USERNAME_FIELD_NUMBER))
-                                    .map(message -> authentication.login(message.getEmail(), message.getPassword()))
-                            );
-                        })
-                        .post("users", ctx -> {
-                            ctx.render(
-                                    merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
-                                            .map(message -> authentication.login(message.getEmail(), message.getPassword()))
-                            );
-                        })
-                        .put("users", ctx -> {
-                            ctx.render(
-                                    merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
-                                            .map(message -> usersResource.addUser(message.getUsername(), message.getEmail(), message.getPassword()))
-                            );
-                        })
-                        .put("users/:id/izou", assureUser(ctx -> ctx.render(
-                                merge(ctx, IzouInstance.newBuilder(), Arrays.asList(IzouInstance.ID_FIELD_NUMBER, IzouInstance.TOKEN_FIELD_NUMBER))
-                                        .map(message -> usersResource.addIzouInstance(assertParameterInt(ctx, "id"), message.getName(), ctx.get(JWTokenPassed.class)))
-                        )))
-                        .delete("users/:id", assureUser(ctx ->
-                                usersResource.removeUser(assertParameterInt(ctx, "id"), ctx.get(JWTokenPassed.class)))
-                        )
-                        .delete("users/:id/izou/:izouid", assureUser(ctx ->
-                                usersResource.removeIzouInstance(assertParameterInt(ctx, "id"), assertParameterInt(ctx, "izouid"), ctx.get(JWTokenPassed.class)))
-                        )
-                        .get("izou", ctx -> ctx.render(izouResource.getCurrentVersion()))
-                        .put("izou/:major/:minor/:patch", assureUser(ctx -> ctx.render(
-                                ctx.getRequest().getBodyStream().toPromise()
-                                    .map(byteBuf ->
-                                            izouResource.putIzou(
-                                                    assertParameterInt(ctx, "major"),
-                                                    assertParameterInt(ctx, "minor"),
-                                                    assertParameterInt(ctx, "patch"),
-                                                    ctx.get(JWTokenPassed.class).getId(),
-                                                    //byteBuf.) TODO: stream
-                                                    null)
+                .handlers(chain -> {
+                    Chain put = chain
+                                    .all(ctx -> {
+                                        ctx.getResponse().getHeaders().add("access-control-allow-origin", "*");
+                                        ctx.getResponse().getHeaders().add("access-control-allow-methods", "GET,PUT,POST,PATCH,DELETE,OPTIONS");
+                                        ctx.getResponse().getHeaders().add("access-control-allow-credentials", "true");
+                                        ctx.getResponse().getHeaders().add("access-control-allow-headers", "Authorization,Content-Type");
+                                        ctx.getResponse().getHeaders().add("access-control-expose-headers", "Link,Location");
+                                        ctx.getResponse().getHeaders().add("access-control-max-age", "86400");
+                                        String jwtHeader = ctx.getRequest().getHeaders().get("Authorization");
+                                        if (jwtHeader == null) {
+                                            jwtHeader = ctx.getRequest().getQueryParams().get("Authorization");
+                                        }
+                                        if (jwtHeader != null) {
+                                            if (!jwtHeader.matches("Bearer .*")) {
+                                                throw new BadRequestException("Authorization header must contain Bearer token in the format <Bearer JWT>");
+                                            }
+                                            String jwt = jwtHeader.substring("Bearer ".length());
+                                            JWTokenPassed jwTokenPassed = jwtHelper.parseToken(jwt);
+                                            ctx.next(Registry.single(JWTokenPassed.class, jwTokenPassed));
+                                        } else {
+                                            ctx.next();
+                                        }
+                                    })
+                                    .options(ctx -> {
+                                        ctx.getResponse().status(204);
+                                        ctx.getResponse().contentType("text/plain");
+                                        ctx.render("");
+                                    })
+                                    .post("authentication/izou", assureIzou(ctx -> {
+                                        ctx.render(authentication.refresh(ctx.get(JWTokenPassed.class).getId()));
+                                    }))
+                                    .post("authentication/users", ctx -> {
+                                        ctx.render(
+                                                merge(ctx, User.newBuilder(), Arrays.asList(User.ID_FIELD_NUMBER, User.USERNAME_FIELD_NUMBER))
+                                                        .map(message -> authentication.login(message.getEmail(), message.getPassword()))
+                                        );
+                                    })
+                                    .post("users", ctx -> {
+                                        ctx.render(
+                                                merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
+                                                        .map(message -> authentication.login(message.getEmail(), message.getPassword()))
+                                        );
+                                    })
+                                    .put("users", ctx -> {
+                                        ctx.render(
+                                                merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
+                                                        .map(message -> usersResource.addUser(message.getUsername(), message.getEmail(), message.getPassword()))
+                                        );
+                                    })
+                                    .put("users/:id/izou", assureUser(ctx -> ctx.render(
+                                            merge(ctx, IzouInstance.newBuilder(), Arrays.asList(IzouInstance.ID_FIELD_NUMBER, IzouInstance.TOKEN_FIELD_NUMBER))
+                                                    .map(message -> usersResource.addIzouInstance(assertParameterInt(ctx, "id"), message.getName(), ctx.get(JWTokenPassed.class)))
+                                    )))
+                                    .delete("users/:id", assureUser(ctx ->
+                                            usersResource.removeUser(assertParameterInt(ctx, "id"), ctx.get(JWTokenPassed.class)))
                                     )
-                            ))
-                        )
-                        .get("apps", doPaginated(appResource::listApps))
-                        .get("apps/search/:keyword", doPaginated((from, next, ctx) -> {
-                            String keyword = assertParameter(ctx, "keyword");
-                            return appResource.searchApps(from, next, keyword);
-                        }))
-                        .get("apps/:id", ctx -> {
-                            int id = assertParameterInt(ctx, "id");
-                            List<String> platforms = ctx.getRequest().getQueryParams().asMultimap().get("platform");
-                            ctx.render(appResource.getApp(id, platforms));
-                        })
-                        .get("apps/:id/:major/:minor/:patch", ctx -> {
-                            List<String> platforms = ctx.getRequest().getQueryParams().asMultimap().get("platform");
-                            ctx.render(appResource.getAppVersion(
-                                    assertParameterInt(ctx, "id"),
-                                    assertParameterInt(ctx, "major"),
-                                    assertParameterInt(ctx, "minor"),
-                                    assertParameterInt(ctx, "patch"),
-                                    platforms
-                            ));
-                        })
-                        .patch("apps/:id", assureUser(ctx -> {
-                            ctx.render(
-                                    merge(ctx, App.newBuilder(), Arrays.asList(
-                                            App.ACTIVE_FIELD_NUMBER,
-                                            App.TAGS_FIELD_NUMBER,
-                                            App.DEVELOPER_FIELD_NUMBER)
+                                    .delete("users/:id/izou/:izouid", assureUser(ctx ->
+                                            usersResource.removeIzouInstance(assertParameterInt(ctx, "id"), assertParameterInt(ctx, "izouid"), ctx.get(JWTokenPassed.class)))
                                     )
-                                    .map(app -> appResource.updateApp(
-                                            ctx.get(JWTokenPassed.class).getId(),
-                                            assertParameterInt(ctx, "id"),
-                                            app.build())
+                                    .get("izou", ctx -> ctx.render(izouResource.getCurrentVersion()))
+                                    .put("izou/:major/:minor/:patch", assureUser(ctx -> ctx.render(
+                                            ctx.getRequest().getBodyStream().toPromise()
+                                                    .map(byteBuf ->
+                                                            izouResource.putIzou(
+                                                                    assertParameterInt(ctx, "major"),
+                                                                    assertParameterInt(ctx, "minor"),
+                                                                    assertParameterInt(ctx, "patch"),
+                                                                    ctx.get(JWTokenPassed.class).getId(),
+                                                                    //byteBuf.) TODO: stream
+                                                                    null)
+                                                    )
+                                            ))
                                     )
+                                    .get("apps", doPaginated(appResource::listApps))
+                                    .get("apps/search/:keyword", doPaginated((from, next, ctx) -> {
+                                        String keyword = assertParameter(ctx, "keyword");
+                                        return appResource.searchApps(from, next, keyword);
+                                    }))
+                                    .get("apps/:id", ctx -> {
+                                        int id = assertParameterInt(ctx, "id");
+                                        List<String> platforms = ctx.getRequest().getQueryParams().asMultimap().get("platform");
+                                        ctx.render(appResource.getApp(id, platforms));
+                                    })
+                                    .get("apps/:id/:major/:minor/:patch", ctx -> {
+                                        List<String> platforms = ctx.getRequest().getQueryParams().asMultimap().get("platform");
+                                        ctx.render(appResource.getAppVersion(
+                                                assertParameterInt(ctx, "id"),
+                                                assertParameterInt(ctx, "major"),
+                                                assertParameterInt(ctx, "minor"),
+                                                assertParameterInt(ctx, "patch"),
+                                                platforms
+                                        ));
+                                    })
+                                    .patch("apps/:id", assureUser(ctx -> {
+                                        ctx.render(
+                                                merge(ctx, App.newBuilder(), Arrays.asList(
+                                                        App.ACTIVE_FIELD_NUMBER,
+                                                        App.TAGS_FIELD_NUMBER,
+                                                        App.DEVELOPER_FIELD_NUMBER)
+                                                )
+                                                        .map(app -> appResource.updateApp(
+                                                                ctx.get(JWTokenPassed.class).getId(),
+                                                                assertParameterInt(ctx, "id"),
+                                                                app.build())
+                                                        )
 
-                            );
-                        }))
-                        .put("apps", assureUser(ctx -> {
-                            ctx.render(
-                                    merge(ctx, App.newBuilder(), Arrays.asList(
-                                            App.ID_FIELD_NUMBER,
-                                            App.ACTIVE_FIELD_NUMBER,
-                                            App.TAGS_FIELD_NUMBER,
-                                            App.DEVELOPER_FIELD_NUMBER)
-                                    )
-                                    .map(app -> appResource.createApp(
-                                            ctx.get(JWTokenPassed.class).getId(),
-                                            app.build())
-                                    )
+                                        );
+                                    }))
+                                    .put("apps", assureUser(ctx -> {
+                                        ctx.render(
+                                                merge(ctx, App.newBuilder(), Arrays.asList(
+                                                        App.ID_FIELD_NUMBER,
+                                                        App.ACTIVE_FIELD_NUMBER,
+                                                        App.TAGS_FIELD_NUMBER,
+                                                        App.DEVELOPER_FIELD_NUMBER)
+                                                )
+                                                        .map(app -> appResource.createApp(
+                                                                ctx.get(JWTokenPassed.class).getId(),
+                                                                app.build())
+                                                        )
 
-                            );
-                        }))
-                        .put("apps/:id/:major/:minor/:patch/:platform", assureUser(ctx -> {
-                            ctx.render(
-                                    ctx.getRequest().getBodyStream().toPromise()
-                                            .map(byteBuf ->
-                                                    appResource.putInstance(
-                                                            ctx.get(JWTokenPassed.class).getId(),
-                                                            assertParameterInt(ctx, "id"),
-                                                            assertParameterInt(ctx, "major"),
-                                                            assertParameterInt(ctx, "minor"),
-                                                            assertParameterInt(ctx, "patch"),
-                                                            assertParameter(ctx, "platform"),
-                                                            //byteBuf.) TODO: stream
-                                                            null)
-                                            )
-                            );
-                        }))
-
+                                        );
+                                    }))
+                                    .put("apps/:id/:major/:minor/:patch/:platform", assureUser(ctx -> {
+                                        ctx.render(
+                                                ctx.getRequest().getBodyStream().toPromise()
+                                                        .map(byteBuf ->
+                                                                appResource.putInstance(
+                                                                        ctx.get(JWTokenPassed.class).getId(),
+                                                                        assertParameterInt(ctx, "id"),
+                                                                        assertParameterInt(ctx, "major"),
+                                                                        assertParameterInt(ctx, "minor"),
+                                                                        assertParameterInt(ctx, "patch"),
+                                                                        assertParameter(ctx, "platform"),
+                                                                        //byteBuf.) TODO: stream
+                                                                        null)
+                                                        )
+                                        );
+                                    }));
+                    if (fileDir != null) {
+                        chain.files(fileHandlerSpec ->
+                                fileHandlerSpec.dir(fileDir)
+                                    .path("files")
+                        );
+                    }
+                }
                 )
         );
     }
