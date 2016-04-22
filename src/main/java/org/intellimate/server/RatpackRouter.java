@@ -6,9 +6,12 @@ import com.google.protobuf.util.JsonFormat;
 import org.intellimate.server.jwt.JWTHelper;
 import org.intellimate.server.jwt.JWTokenPassed;
 import org.intellimate.server.jwt.Subject;
+import org.intellimate.server.proto.App;
 import org.intellimate.server.proto.IzouInstance;
 import org.intellimate.server.proto.User;
+import org.intellimate.server.rest.AppResource;
 import org.intellimate.server.rest.Authentication;
+import org.intellimate.server.rest.IzouResource;
 import org.intellimate.server.rest.UsersResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +42,8 @@ public class RatpackRouter implements RequestHelper {
     private final JWTHelper jwtHelper;
     private final Authentication authentication;
     private final UsersResource usersResource;
+    private final IzouResource izouResource;
+    private final AppResource appResource;
     private final int port;
 
     /**
@@ -46,12 +51,16 @@ public class RatpackRouter implements RequestHelper {
      * @param jwtHelper the jwt-helper to use
      * @param authentication
      * @param usersResource
+     * @param izouResource
+     * @param appResource
      * @param port the port the server is listening on
      */
-    public RatpackRouter(JWTHelper jwtHelper, Authentication authentication, UsersResource usersResource, int port) {
+    public RatpackRouter(JWTHelper jwtHelper, Authentication authentication, UsersResource usersResource, IzouResource izouResource, AppResource appResource, int port) {
         this.jwtHelper = jwtHelper;
         this.authentication = authentication;
         this.usersResource = usersResource;
+        this.izouResource = izouResource;
+        this.appResource = appResource;
         this.port = port;
     }
 
@@ -123,6 +132,87 @@ public class RatpackRouter implements RequestHelper {
                         .delete("users/:id/izou/:izouid", assureUser(ctx ->
                                 usersResource.removeIzouInstance(assertParameterInt(ctx, "id"), assertParameterInt(ctx, "izouid"), ctx.get(JWTokenPassed.class)))
                         )
+                        .get("izou", ctx -> ctx.render(izouResource.getCurrentVersion()))
+                        .put("izou/:major/:minor/:patch", assureUser(ctx -> ctx.render(
+                                ctx.getRequest().getBodyStream().toPromise()
+                                    .map(byteBuf ->
+                                            izouResource.putIzou(
+                                                    assertParameterInt(ctx, "major"),
+                                                    assertParameterInt(ctx, "minor"),
+                                                    assertParameterInt(ctx, "patch"),
+                                                    ctx.get(JWTokenPassed.class).getId(),
+                                                    //byteBuf.) TODO: stream
+                                                    null)
+                                    )
+                            ))
+                        )
+                        .get("apps", doPaginated(appResource::listApps))
+                        .get("apps/search/:keyword", doPaginated((from, next, ctx) -> {
+                            String keyword = assertParameter(ctx, "keyword");
+                            return appResource.searchApps(from, next, keyword);
+                        }))
+                        .get("apps/:id", ctx -> {
+                            int id = assertParameterInt(ctx, "id");
+                            List<String> platforms = ctx.getRequest().getQueryParams().asMultimap().get("platform");
+                            ctx.render(appResource.getApp(id, platforms));
+                        })
+                        .get("apps/:id/:major/:minor/:patch", ctx -> {
+                            List<String> platforms = ctx.getRequest().getQueryParams().asMultimap().get("platform");
+                            ctx.render(appResource.getAppVersion(
+                                    assertParameterInt(ctx, "id"),
+                                    assertParameterInt(ctx, "major"),
+                                    assertParameterInt(ctx, "minor"),
+                                    assertParameterInt(ctx, "patch"),
+                                    platforms
+                            ));
+                        })
+                        .patch("apps/:id", assureUser(ctx -> {
+                            ctx.render(
+                                    merge(ctx, App.newBuilder(), Arrays.asList(
+                                            App.ACTIVE_FIELD_NUMBER,
+                                            App.TAGS_FIELD_NUMBER,
+                                            App.DEVELOPER_FIELD_NUMBER)
+                                    )
+                                    .map(app -> appResource.updateApp(
+                                            ctx.get(JWTokenPassed.class).getId(),
+                                            assertParameterInt(ctx, "id"),
+                                            app.build())
+                                    )
+
+                            );
+                        }))
+                        .put("apps", assureUser(ctx -> {
+                            ctx.render(
+                                    merge(ctx, App.newBuilder(), Arrays.asList(
+                                            App.ID_FIELD_NUMBER,
+                                            App.ACTIVE_FIELD_NUMBER,
+                                            App.TAGS_FIELD_NUMBER,
+                                            App.DEVELOPER_FIELD_NUMBER)
+                                    )
+                                    .map(app -> appResource.createApp(
+                                            ctx.get(JWTokenPassed.class).getId(),
+                                            app.build())
+                                    )
+
+                            );
+                        }))
+                        .put("apps/:id/:major/:minor/:patch/:platform", assureUser(ctx -> {
+                            ctx.render(
+                                    ctx.getRequest().getBodyStream().toPromise()
+                                            .map(byteBuf ->
+                                                    appResource.putInstance(
+                                                            ctx.get(JWTokenPassed.class).getId(),
+                                                            assertParameterInt(ctx, "id"),
+                                                            assertParameterInt(ctx, "major"),
+                                                            assertParameterInt(ctx, "minor"),
+                                                            assertParameterInt(ctx, "patch"),
+                                                            assertParameter(ctx, "platform"),
+                                                            //byteBuf.) TODO: stream
+                                                            null)
+                                            )
+                            );
+                        }))
+
                 )
         );
     }
@@ -176,14 +266,14 @@ public class RatpackRouter implements RequestHelper {
      * @param contextConsumer the consumer to execute
      * @return a handler that executes the consumer if client is an izou instance
      */
-    private Handler assureIzou(Consumer<Context> contextConsumer) {
+    private Handler assureIzou(Handler contextConsumer) {
         return ctx -> {
             ctx.maybeGet(JWTokenPassed.class)
                     .orElseThrow(() -> new UnauthorizedException("Client needs the Authorization-header to access the method"));
             if (ctx.get(JWTokenPassed.class).getSubject() != Subject.IZOU) {
                 throw new UnauthorizedException("Client needs to be an izou-instance");
             }
-            contextConsumer.accept(ctx);
+            contextConsumer.handle(ctx);
         };
     }
 
@@ -192,14 +282,14 @@ public class RatpackRouter implements RequestHelper {
      * @param contextConsumer the consumer to execute
      * @return a handler that executes the consumer if client is an izou instance
      */
-    private Handler assureUser(Consumer<Context> contextConsumer) {
+    private Handler assureUser(Handler contextConsumer) {
         return ctx -> {
             ctx.maybeGet(JWTokenPassed.class)
                     .orElseThrow(() -> new UnauthorizedException("Client needs the Authorization-header to access the method"));
             if (ctx.get(JWTokenPassed.class).getSubject() != Subject.USER) {
                 throw new UnauthorizedException("Client needs to be an user");
             }
-            contextConsumer.accept(ctx);
+            contextConsumer.handle(ctx);
         };
     }
 }

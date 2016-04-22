@@ -1,8 +1,15 @@
 package org.intellimate.server;
 
+import org.intellimate.server.rest.Paginated;
+import org.jooq.lambda.function.Function3;
 import ratpack.handling.Context;
+import ratpack.handling.Handler;
 
+import java.util.function.BiFunction;
+import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
+
+import static com.sun.tools.doclint.Entity.or;
 
 /**
  * this interface contains various convenience-methods to help to deal with SparkJava-Requests.
@@ -64,6 +71,64 @@ public interface RequestHelper {
     }
 
     /**
+     * checks that an query-parameter exists and returns it or the default
+     * @param context the context to check
+     * @param parameter the query-parameter
+     * @param defaultValue the defaultValue
+     * @return the value of the parameter
+     */
+    default String queryOrDefault(Context context, String parameter, String defaultValue) throws BadRequestException {
+        String param = context.getRequest().getQueryParams().get(parameter);
+        if (param != null) {
+            return param;
+        } else {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * checks that an query-parameter exists and returns it or the default
+     * @param context the context to check
+     * @param parameter the query-parameter
+     * @param defaultValue the defaultValue
+     * @return the value of the parameter
+     */
+    default int queryOrDefault(Context context, String parameter, int defaultValue) throws BadRequestException {
+        String param = context.getRequest().getQueryParams().get(parameter);
+        if (param != null) {
+            try {
+                return Integer.parseInt(param);
+            } catch (NumberFormatException e) {
+                throw new BadRequestException("Request needs Query-Parameter: " + parameter + " as an Integer");
+            }
+        } else {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * checks that an query-parameter exists and returns it or the default
+     * @param context the context to check
+     * @param parameter the query-parameter
+     * @param defaultValue the defaultValue
+     * @return the value of the parameter
+     */
+    default boolean queryOrDefault(Context context, String parameter, boolean defaultValue) throws BadRequestException {
+        String param = context.getRequest().getQueryParams().get(parameter);
+        if (param != null) {
+            if (param.equals("true")) {
+                return true;
+            } else if (param.equals("false")) {
+                return false;
+            } else {
+                throw new BadRequestException("Request needs Query-Parameter: " + parameter + " as an Boolean");
+            }
+        } else {
+            return defaultValue;
+        }
+    }
+
+    /**
      * checks that an query-parameter exists and returns it
      * @param context the context to check
      * @param parameter the query-parameter
@@ -89,5 +154,31 @@ public interface RequestHelper {
         } catch (NumberFormatException e) {
             throw new BadRequestException("Request needs Query-Parameter: " + parameter + " as an Integer");
         }
+    }
+
+    /**
+     * resolve a integer-based paginated request
+     * @param function the function to apply
+     * @param <T> the index-type
+     */
+    default <T> Handler doPaginated(Function3<Integer, Boolean, Context, Paginated<T>> function) {
+        return ctx -> {
+            int from = queryOrDefault(ctx, "from", 0);
+            boolean asc = queryOrDefault(ctx, "asc", true);
+            ctx.render(function.apply(from, asc, ctx));
+        };
+    }
+
+    /**
+     * resolve a integer-based paginated request
+     * @param function the function to apply
+     * @param <T> the index-type
+     */
+    default <T> Handler doPaginated(BiFunction<Integer, Boolean, Paginated<T>> function) {
+        return ctx -> {
+            int from = queryOrDefault(ctx, "from", 0);
+            boolean asc = queryOrDefault(ctx, "asc", true);
+            ctx.render(function.apply(from, asc));
+        };
     }
 }
