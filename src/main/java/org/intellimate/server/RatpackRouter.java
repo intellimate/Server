@@ -215,18 +215,26 @@ public class RatpackRouter implements RequestHelper {
                                     }))
                                     .put("apps/:id/:major/:minor/:patch/:platform", assureUser(ctx -> {
                                         ctx.render(
-                                                ctx.getRequest().getBodyStream().toPromise()
-                                                        .map(byteBuf ->
-                                                                appResource.putInstance(
-                                                                        ctx.get(JWTokenPassed.class).getId(),
-                                                                        assertParameterInt(ctx, "id"),
-                                                                        assertParameterInt(ctx, "major"),
-                                                                        assertParameterInt(ctx, "minor"),
-                                                                        assertParameterInt(ctx, "patch"),
-                                                                        assertParameter(ctx, "platform"),
-                                                                        //byteBuf.) TODO: stream
-                                                                        null)
-                                                        )
+                                                ctx.getRequest().getBody().map(data ->
+                                                        appResource.putInstance(
+                                                                ctx.get(JWTokenPassed.class).getId(),
+                                                                assertParameterInt(ctx, "id"),
+                                                                assertParameterInt(ctx, "major"),
+                                                                assertParameterInt(ctx, "minor"),
+                                                                assertParameterInt(ctx, "patch"),
+                                                                assertParameter(ctx, "platform"),
+                                                                data.getInputStream())
+                                                    )
+                                        );
+                                    }))
+                                    .put("apps/:id/picture", assureUser(ctx -> {
+                                        ctx.render(
+                                                ctx.getRequest().getBody().map(data ->
+                                                        appResource.putPicture(
+                                                                ctx.get(JWTokenPassed.class).getId(),
+                                                                assertParameterInt(ctx, "id"),
+                                                                data.getInputStream())
+                                                )
                                         );
                                     }));
                     if (fileDir != null) {
