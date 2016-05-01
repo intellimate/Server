@@ -146,4 +146,18 @@ public class AppResource {
         appOperations.setActive(app, appInstanceRecord.getIdAppInstance());
         return fileStorage.getLink(name);
     }
+
+    public String putPicture(int userID, int app, InputStream stream) {
+        UserRecord user = userOperations.getUser(userID)
+                .orElseThrow(() -> new BadRequestException(String.format("invalid user %d", userID)));
+        Integer developer = appOperations.getApp(app)
+                .orElseThrow(() -> new BadRequestException(String.format("invalid app %d", app)))
+                .v1.getDeveloper();
+        if (developer != userID) {
+            throw new BadRequestException(String.format("user %d is not developer for app %d", userID, app));
+        }
+        String name = "picture" + app + ".jpg";
+        fileStorage.saveExact(stream, name);
+        return fileStorage.getLink(name);
+    }
 }
