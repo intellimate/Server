@@ -137,7 +137,7 @@ public class Main {
                 ? Integer.parseInt(portRaw)
                 : 4567;
 
-        Communication communication = new Communication(jwtHelper);
+        Communication communication = new Communication(jwtHelper, izouInstanceOperations);
 
         try {
             communication.startServer();
