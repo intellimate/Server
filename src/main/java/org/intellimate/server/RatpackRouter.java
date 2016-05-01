@@ -120,6 +120,12 @@ public class RatpackRouter implements RequestHelper {
                                                         .map(message -> authentication.login(message.getEmail(), message.getPassword()))
                                         );
                                     })
+                                    .get("authentication/apps/:izouId/:app",
+                                            assureUser(ctx -> authentication.app(
+                                                    ctx.get(JWTokenPassed.class).getId(),
+                                                    assertParameterInt(ctx, "izouId"),
+                                                    assertParameterInt(ctx, "app")))
+                                    )
                                     .post("users", ctx -> {
                                         ctx.render(
                                                 merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
@@ -142,7 +148,7 @@ public class RatpackRouter implements RequestHelper {
                                     .delete("users/:id/izou/:izouid", assureUser(ctx ->
                                             usersResource.removeIzouInstance(assertParameterInt(ctx, "id"), assertParameterInt(ctx, "izouid"), ctx.get(JWTokenPassed.class)))
                                     )
-                                    .prefix("users/:id/izou/:izouId/:command", chain2 -> chain2.all(assureIzou(communication::handleRequest)))
+                                    .prefix("users/:id/izou/:izouId/:command", chain2 -> chain2.all(communication::handleRequest))
                                     .get("izou", ctx -> ctx.render(izouResource.getCurrentVersion()))
                                     .put("izou/:major/:minor/:patch", assureUser(ctx -> ctx.render(
                                             ctx.getRequest().getBodyStream().toPromise()
