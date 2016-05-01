@@ -4,16 +4,13 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.intellimate.server.BadRequestException;
 import org.intellimate.server.UnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
-
-import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.Int;
+import java.util.Date;
 
 /**
  * this class creates and reads the JWT (Json Web Token)
@@ -122,18 +119,10 @@ public class JWTHelper {
             throw new UnauthorizedException("Illegal JWT, id is not an integer");
         }
         Object rawApp = claimsJws.getBody().get(APP);
-        int app = -1;
-        if (rawApp != null) {
-            try {
-                app = Integer.parseInt((String)rawApp);
-            } catch (NumberFormatException e) {
-                throw new UnauthorizedException("Illegal JWT, id is not an integer");
-            }
-        }
         return new JWTokenPassed(Subject.valueOf(claimsJws.getBody().getSubject()),
                 claimsJws.getBody().containsKey(REFRESH_CLAIM) && claimsJws.getBody().get(REFRESH_CLAIM).equals(Boolean.TRUE),
                 id,
-                app);
+                (String)rawApp);
     }
 
     /**
