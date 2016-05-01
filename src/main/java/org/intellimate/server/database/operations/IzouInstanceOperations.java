@@ -34,6 +34,20 @@ public class IzouInstanceOperations extends AbstractOperations {
     }
 
     /**
+     * validates that the passed id is existing in the db
+     * @param izouID the izou id to validate
+     * @param userID the user belonging to the instance
+     * @return true if valid, false if not
+     */
+    public boolean validateIzouInstanceID(int izouID, int userID) {
+        return create.fetchExists(
+                DSL.select(IZOU_INSTANCE.ID_INSTANCES)
+                        .where(IZOU_INSTANCE.ID_INSTANCES.eq(izouID))
+                        .and(IZOU_INSTANCE.USER.eq(userID))
+        );
+    }
+
+    /**
      * inserts the izou instance the database
      * @param user the user the instance associated with
      * @param name the name of the instance
