@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -46,27 +47,36 @@ public class Communication implements RequestHelper {
         int userID = assertParameterInt(context, "id");
         int izouId = assertParameterInt(context, "izouId");
         JWTokenPassed jwt = context.get(JWTokenPassed.class);
+        if (!jwt.getSubject().equals(Subject.APP)) {
+            throw new UnauthorizedException("wrong token");
+        }
         if (jwt.getId() != izouId) {
             throw new UnauthorizedException("not authorized for izou instance "+izouId);
         }
+        if (!jwt.getApp().isPresent()) {
+            throw new UnauthorizedException("app indentifier missing");
+        }
         String path = uri.replace(String.format("users/%d/izou/%d", userID, izouId), "");
+        List<HttpRequest.Param> params = context.getRequest().getQueryParams().getAll().entrySet().stream()
+                .map(entry -> HttpRequest.Param.newBuilder()
+                        .setKey(entry.getKey())
+                        .addAllValue(entry.getValue())
+                        .build()
+                )
+                .collect(Collectors.toList());
+        params.add(HttpRequest.Param.newBuilder().setKey("user").addValue(String.valueOf(userID)).build());
+        params.add(HttpRequest.Param.newBuilder().setKey("izou").addValue(String.valueOf(izouId)).build());
+        params.add(HttpRequest.Param.newBuilder().setKey("app").addValue(String.valueOf(jwt.getApp().get())).build());
         return context.getRequest().getBody()
-                .map(data ->
-                        HttpRequest.newBuilder()
-                                .setUrl(path)
-                                .setContentType(context.getRequest().getContentType().getType())
-                                .setMethod(context.getRequest().getMethod().getName())
-                                .setBody(ByteString.copyFrom(data.getBytes()))
-                                .addAllParams(
-                                        context.getRequest().getQueryParams().getAll().entrySet().stream()
-                                        .map(entry -> HttpRequest.Param.newBuilder()
-                                                .setKey(entry.getKey())
-                                                .addAllValue(entry.getValue())
-                                                .build()
-                                        )
-                                        .collect(Collectors.toList())
-                                )
-                                .build()
+                .map(data -> HttpRequest.newBuilder()
+                        .setUrl(path)
+                        .setContentType(context.getRequest().getContentType().getType())
+                        .setMethod(context.getRequest().getMethod().getName())
+                        .setBody(ByteString.copyFrom(data.getBytes()))
+                        .addAllParams(
+                                params
+                        )
+                        .build()
                 )
                 .flatMap(httpRequest -> communicate(httpRequest, izouId));
     }
@@ -143,7 +153,7 @@ public class Communication implements RequestHelper {
         }
     }
 
-    void communicateWithIzou(BlockingDeque<Command> input, Socket socket, InputStream in) {
+    private void communicateWithIzou(BlockingDeque<Command> input, Socket socket, InputStream in) {
         try {
             try {
                 OutputStream out = socket.getOutputStream();
