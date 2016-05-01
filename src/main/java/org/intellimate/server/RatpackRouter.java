@@ -124,7 +124,7 @@ public class RatpackRouter implements RequestHelper {
                                             assureUser(ctx -> authentication.app(
                                                     ctx.get(JWTokenPassed.class).getId(),
                                                     assertParameterInt(ctx, "izouId"),
-                                                    assertParameterInt(ctx, "app")))
+                                                    assertParameter(ctx, "app")))
                                     )
                                     .post("users", ctx -> {
                                         ctx.render(

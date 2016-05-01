@@ -10,9 +10,9 @@ public class JWTokenPassed {
     private final Subject subject;
     private final boolean refresh;
     private final int id;
-    private final int app;
+    private final String app;
 
-    JWTokenPassed(Subject subject, boolean refresh, int id, int app) {
+    JWTokenPassed(Subject subject, boolean refresh, int id, String app) {
         this.subject = subject;
         this.refresh = refresh;
         this.id = id;
@@ -31,8 +31,8 @@ public class JWTokenPassed {
         return id;
     }
 
-    public Optional<Integer> getApp() {
-        if (app == -1) {
+    public Optional<String> getApp() {
+        if (app == null) {
             return Optional.empty();
         } else {
             return Optional.of(app);

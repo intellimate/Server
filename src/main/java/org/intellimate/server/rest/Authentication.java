@@ -55,7 +55,7 @@ public class Authentication {
      * @param app the id of the app
      * @return if valid an access jwt-token
      */
-    public String app(int userId, int izouId, int app) {
+    public String app(int userId, int izouId, String app) {
         boolean valid = izouInstanceOperations.validateIzouInstanceID(izouId, userId);
         if (valid) {
             return jwtHelper.generateAppAccessJWT(izouId, app);

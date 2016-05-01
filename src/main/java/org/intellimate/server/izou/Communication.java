@@ -73,7 +73,7 @@ public class Communication implements RequestHelper {
                 .collect(Collectors.toList());
         params.add(HttpRequest.Param.newBuilder().setKey("user").addValue(String.valueOf(userID)).build());
         params.add(HttpRequest.Param.newBuilder().setKey("izou").addValue(String.valueOf(izouId)).build());
-        jwt.getApp().ifPresent(id -> params.add(HttpRequest.Param.newBuilder().setKey("app").addValue(String.valueOf(id)).build()));
+        jwt.getApp().ifPresent(id -> params.add(HttpRequest.Param.newBuilder().setKey("app").addValue(id).build()));
         context.getRequest().getBody()
                 .map(data -> HttpRequest.newBuilder()
                         .setUrl(path)

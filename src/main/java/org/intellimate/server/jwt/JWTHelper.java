@@ -77,13 +77,13 @@ public class JWTHelper {
      * @param app the id of the app-instance
      * @return the JWT string
      */
-    public String generateAppAccessJWT(int izou, int app) {
+    public String generateAppAccessJWT(int izou, String app) {
         logger.debug("encoding JWT for app-instance", app);
         Instant expiration = Instant.now().plus(accessTokenExpiration);
         return Jwts.builder()
                 .setSubject(Subject.APP.name())
                 .claim(ID_CLAIM, String.valueOf(izou))
-                .claim(APP, String.valueOf(app))
+                .claim(APP, app)
                 .setExpiration(Date.from(expiration))
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
