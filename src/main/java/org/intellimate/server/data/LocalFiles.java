@@ -1,5 +1,6 @@
 package org.intellimate.server.data;
 
+import com.google.common.io.ByteStreams;
 import org.intellimate.server.BadRequestException;
 import org.intellimate.server.InternalServerErrorException;
 
@@ -29,7 +30,11 @@ public class LocalFiles implements FileStorage {
                 throw new InternalServerErrorException(String.format("unable to create file %s", name), e);
             }
         }
-        //TODO write
+        try {
+            ByteStreams.copy(inputStream, new FileOutputStream(file));
+        } catch (IOException e) {
+            throw new InternalServerErrorException(String.format("unable to save %s", name), e);
+        }
     }
 
     @Override
