@@ -50,21 +50,33 @@ public class Authentication {
 
     /**
      * handles the refresh requests from the izou-instances
+     * @param userId the id of the user
+     * @param izouId the id of the izou-instance
+     * @param app the id of the app
+     * @return if valid an access jwt-token
+     */
+    public String app(int userId, int izouId, int app) {
+        boolean valid = izouInstanceOperations.validateIzouInstanceID(izouId, userId);
+        if (valid) {
+            return jwtHelper.generateAppAccessJWT(izouId, app);
+        } else {
+            logger.info("invalid izou id {} and user {} combination", izouId, userId);
+            throw new UnauthorizedException("invalid izou id "+izouId+" and user "+userId+" combination");
+        }
+    }
+
+    /**
+     * handles the refresh requests from the izou-instances
      * @param id the id of the izou-instance from the refresh-token
      * @return if valid an access jwt-token
      */
     public String refresh(int id) {
-        try {
-            boolean valid = izouInstanceOperations.validateIzouInstanceID(id);
-            if (valid) {
-                return jwtHelper.generateIzouAccessJWT(id);
-            } else {
-                logger.info("invalid izou id", id);
-                throw new UnauthorizedException("Invalid JWT, the registered instance was removed");
-            }
-        } catch (NumberFormatException e) {
-            logger.info("unable to parse {} as an integer", id);
-            throw new UnauthorizedException("Invalid JWT");
+        boolean valid = izouInstanceOperations.validateIzouInstanceID(id);
+        if (valid) {
+            return jwtHelper.generateIzouAccessJWT(id);
+        } else {
+            logger.info("invalid izou id", id);
+            throw new UnauthorizedException("Invalid JWT, the registered instance was removed");
         }
     }
 }
