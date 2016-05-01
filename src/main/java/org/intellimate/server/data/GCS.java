@@ -14,12 +14,22 @@ public class GCS implements FileStorage {
     }
 
     @Override
+    public void saveExact(InputStream inputStream, String name) {
+
+    }
+
+    @Override
     public void delete(String name) {
 
     }
 
     @Override
     public String getLink(String name) {
+        return null;
+    }
+
+    @Override
+    public String getLinkForExactName(String name) {
         return null;
     }
 }

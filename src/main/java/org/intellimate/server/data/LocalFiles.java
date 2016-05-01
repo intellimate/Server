@@ -22,7 +22,12 @@ public class LocalFiles implements FileStorage {
 
     @Override
     public synchronized void save(InputStream inputStream, String name) {
-        File file = new File(baseDir, name+".izou");
+        saveExact(inputStream, name+".izou");
+    }
+
+    @Override
+    public void saveExact(InputStream inputStream, String name) {
+        File file = new File(baseDir, name);
         if (!file.exists()) {
             try {
                 file.createNewFile();
@@ -52,5 +57,10 @@ public class LocalFiles implements FileStorage {
     @Override
     public synchronized String getLink(String name) {
         return baseDir+name+".izou";
+    }
+
+    @Override
+    public String getLinkForExactName(String name) {
+        return baseDir+name;
     }
 }
