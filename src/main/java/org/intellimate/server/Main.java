@@ -8,6 +8,7 @@ import org.intellimate.server.database.operations.AppOperations;
 import org.intellimate.server.database.operations.IzouInstanceOperations;
 import org.intellimate.server.database.operations.IzouOperations;
 import org.intellimate.server.database.operations.UserOperations;
+import org.intellimate.server.izou.Communication;
 import org.intellimate.server.jwt.JWTHelper;
 import org.intellimate.server.rest.AppResource;
 import org.intellimate.server.rest.Authentication;
@@ -17,7 +18,6 @@ import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jdo.annotations.Queries;
 import javax.naming.NamingException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -137,13 +137,22 @@ public class Main {
                 ? Integer.parseInt(portRaw)
                 : 4567;
 
+        Communication communication = new Communication(jwtHelper);
+
+        try {
+            communication.startServer();
+        } catch (IOException e) {
+            logger.error("unable to start the server", e);
+            System.exit(-1);
+        }
+
         RatpackRouter ratpackRouter = new RatpackRouter(
                 jwtHelper,
                 authentication,
                 usersResource,
                 izouResource,
                 appResource,
-                port,
+                communication, port,
                 fileDir);
 
         try {
