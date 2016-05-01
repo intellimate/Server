@@ -4,6 +4,7 @@ import org.intellimate.server.InternalServerErrorException;
 import org.intellimate.server.NotFoundException;
 import org.intellimate.server.RequestHelper;
 import org.intellimate.server.UnauthorizedException;
+import org.intellimate.server.database.operations.IzouInstanceOperations;
 import org.intellimate.server.jwt.JWTHelper;
 import org.intellimate.server.jwt.JWTokenPassed;
 import org.intellimate.server.jwt.Subject;
@@ -37,9 +38,11 @@ public class Communication implements RequestHelper {
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private ServerSocket serverSocket;
     private final JWTHelper jwtHelper;
+    private final IzouInstanceOperations izouInstanceOperations;
 
-    public Communication(JWTHelper jwtHelper) {
+    public Communication(JWTHelper jwtHelper, IzouInstanceOperations izouInstanceOperations) {
         this.jwtHelper = jwtHelper;
+        this.izouInstanceOperations = izouInstanceOperations;
     }
 
     public Promise<HttpResponse> handleRequest(Context context) {
@@ -47,17 +50,21 @@ public class Communication implements RequestHelper {
         int userID = assertParameterInt(context, "id");
         int izouId = assertParameterInt(context, "izouId");
         JWTokenPassed jwt = context.get(JWTokenPassed.class);
-        if (!jwt.getSubject().equals(Subject.APP)) {
-            throw new UnauthorizedException("wrong token");
-        }
-        if (jwt.getId() != izouId) {
+        if (jwt.getSubject().equals(Subject.IZOU) && jwt.getId() != izouId) {
             throw new UnauthorizedException("not authorized for izou instance "+izouId);
+        }
+        if (jwt.getSubject().equals(Subject.USER)) {
+            boolean valid = izouInstanceOperations.validateIzouInstanceID(izouId, jwt.getId());
+            if (!valid) {
+                throw new UnauthorizedException("not authorized for izou instance "+izouId);
+            }
         }
         if (!jwt.getApp().isPresent()) {
             throw new UnauthorizedException("app indentifier missing");
         }
         String path = uri.replace(String.format("users/%d/izou/%d", userID, izouId), "");
         List<HttpRequest.Param> params = context.getRequest().getQueryParams().getAll().entrySet().stream()
+                .filter(entry -> !(entry.getKey().equals("user") || entry.getKey().equals("izou") || entry.getKey().equals("app")))
                 .map(entry -> HttpRequest.Param.newBuilder()
                         .setKey(entry.getKey())
                         .addAllValue(entry.getValue())
@@ -66,7 +73,7 @@ public class Communication implements RequestHelper {
                 .collect(Collectors.toList());
         params.add(HttpRequest.Param.newBuilder().setKey("user").addValue(String.valueOf(userID)).build());
         params.add(HttpRequest.Param.newBuilder().setKey("izou").addValue(String.valueOf(izouId)).build());
-        params.add(HttpRequest.Param.newBuilder().setKey("app").addValue(String.valueOf(jwt.getApp().get())).build());
+        jwt.getApp().ifPresent(id -> params.add(HttpRequest.Param.newBuilder().setKey("app").addValue(String.valueOf(id)).build()));
         return context.getRequest().getBody()
                 .map(data -> HttpRequest.newBuilder()
                         .setUrl(path)
