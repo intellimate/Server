@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static javafx.scene.input.KeyCode.R;
 import static org.intellimate.server.database.model.Tables.*;
 
 /**

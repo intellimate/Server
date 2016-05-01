@@ -6,10 +6,7 @@ import ratpack.handling.Context;
 import ratpack.handling.Handler;
 
 import java.util.function.BiFunction;
-import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
-
-import static com.sun.tools.doclint.Entity.or;
 
 /**
  * this interface contains various convenience-methods to help to deal with SparkJava-Requests.

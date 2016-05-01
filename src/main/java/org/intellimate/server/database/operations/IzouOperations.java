@@ -3,9 +3,7 @@ package org.intellimate.server.database.operations;
 import org.intellimate.server.database.model.tables.records.IzouRecord;
 import org.jooq.DSLContext;
 
-import java.util.List;
-
-import static org.intellimate.server.database.model.Tables.*;
+import static org.intellimate.server.database.model.Tables.IZOU;
 
 /**
  * this class is concerned with operations on the Izou Table

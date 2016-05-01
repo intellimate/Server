@@ -12,12 +12,10 @@ import org.intellimate.server.database.operations.AppOperations;
 import org.intellimate.server.database.operations.UserOperations;
 import org.intellimate.server.proto.App;
 import org.intellimate.server.proto.AppList;
-import org.jooq.Record;
 import org.jooq.lambda.tuple.Tuple2;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
