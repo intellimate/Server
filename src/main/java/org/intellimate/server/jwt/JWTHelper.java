@@ -24,6 +24,7 @@ public class JWTHelper {
     private static final Logger logger = LoggerFactory.getLogger(JWTHelper.class);
     private static final String REFRESH_CLAIM = "refresh";
     private static final String ID_CLAIM = "sid";
+    private static final String APP = "app";
     private final String secret;
     private final Duration accessTokenExpiration = Duration.ofDays(1);
 
@@ -71,6 +72,24 @@ public class JWTHelper {
     }
 
     /**
+     * creates the izou JWT-access token (has an expiration-date)
+     * @param izou the id of the izou-instance
+     * @param app the id of the app-instance
+     * @return the JWT string
+     */
+    public String generateAppAccessJWT(int izou, int app) {
+        logger.debug("encoding JWT for app-instance", app);
+        Instant expiration = Instant.now().plus(accessTokenExpiration);
+        return Jwts.builder()
+                .setSubject(Subject.APP.name())
+                .claim(ID_CLAIM, String.valueOf(izou))
+                .claim(APP, String.valueOf(app))
+                .setExpiration(Date.from(expiration))
+                .signWith(SignatureAlgorithm.HS256, secret)
+                .compact();
+    }
+
+    /**
      * creates the izou JWT-refresh token (has no expiration-date)
      * @param id the id of the izou-instance
      * @return the JWT string
@@ -102,9 +121,19 @@ public class JWTHelper {
         } catch (NumberFormatException e) {
             throw new UnauthorizedException("Illegal JWT, id is not an integer");
         }
+        Object rawApp = claimsJws.getBody().get(APP);
+        int app = -1;
+        if (rawApp != null) {
+            try {
+                app = Integer.parseInt((String)rawApp);
+            } catch (NumberFormatException e) {
+                throw new UnauthorizedException("Illegal JWT, id is not an integer");
+            }
+        }
         return new JWTokenPassed(Subject.valueOf(claimsJws.getBody().getSubject()),
                 claimsJws.getBody().containsKey(REFRESH_CLAIM) && claimsJws.getBody().get(REFRESH_CLAIM).equals(Boolean.TRUE),
-                id);
+                id,
+                app);
     }
 
     /**

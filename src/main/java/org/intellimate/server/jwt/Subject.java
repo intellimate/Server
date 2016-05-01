@@ -5,5 +5,5 @@ package org.intellimate.server.jwt;
  * @version 1.0
  */
 public enum Subject {
-    USER, IZOU
+    USER, IZOU, APP
 }
