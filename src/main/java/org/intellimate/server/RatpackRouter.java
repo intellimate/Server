@@ -3,6 +3,7 @@ package org.intellimate.server;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
+import org.intellimate.server.izou.Communication;
 import org.intellimate.server.jwt.JWTHelper;
 import org.intellimate.server.jwt.JWTokenPassed;
 import org.intellimate.server.jwt.Subject;
@@ -45,6 +46,7 @@ public class RatpackRouter implements RequestHelper {
     private final UsersResource usersResource;
     private final IzouResource izouResource;
     private final AppResource appResource;
+    private final Communication communication;
     private final int port;
     private final String fileDir;
 
@@ -55,19 +57,22 @@ public class RatpackRouter implements RequestHelper {
      * @param usersResource
      * @param izouResource
      * @param appResource
+     * @param communication
      * @param port the port the server is listening on
      * @param fileDir
      */
-    public RatpackRouter(JWTHelper jwtHelper, Authentication authentication, UsersResource usersResource, IzouResource izouResource, AppResource appResource, int port, String fileDir) {
+    public RatpackRouter(JWTHelper jwtHelper, Authentication authentication, UsersResource usersResource, IzouResource izouResource, AppResource appResource, Communication communication, int port, String fileDir) {
         this.jwtHelper = jwtHelper;
         this.authentication = authentication;
         this.usersResource = usersResource;
         this.izouResource = izouResource;
         this.appResource = appResource;
+        this.communication = communication;
         this.port = port;
         this.fileDir = fileDir;
     }
 
+    //TODO: correct handling of refresh vs. auth tokens?
     public void init() throws Exception {
         Registry registry = Registry.builder()
                 .add(messageRenderer)
@@ -137,6 +142,7 @@ public class RatpackRouter implements RequestHelper {
                                     .delete("users/:id/izou/:izouid", assureUser(ctx ->
                                             usersResource.removeIzouInstance(assertParameterInt(ctx, "id"), assertParameterInt(ctx, "izouid"), ctx.get(JWTokenPassed.class)))
                                     )
+                                    .prefix("users/:id/izou/:izouId/:command", chain2 -> chain2.all(assureIzou(communication::handleRequest)))
                                     .get("izou", ctx -> ctx.render(izouResource.getCurrentVersion()))
                                     .put("izou/:major/:minor/:patch", assureUser(ctx -> ctx.render(
                                             ctx.getRequest().getBodyStream().toPromise()
@@ -281,7 +287,7 @@ public class RatpackRouter implements RequestHelper {
         return ctx -> {
             ctx.maybeGet(JWTokenPassed.class)
                     .orElseThrow(() -> new UnauthorizedException("Client needs the Authorization-header to access the method"));
-            if (ctx.get(JWTokenPassed.class).getSubject() != Subject.IZOU) {
+            if (!ctx.get(JWTokenPassed.class).getSubject().equals(Subject.IZOU)) {
                 throw new UnauthorizedException("Client needs to be an izou-instance");
             }
             contextConsumer.handle(ctx);
@@ -297,7 +303,7 @@ public class RatpackRouter implements RequestHelper {
         return ctx -> {
             ctx.maybeGet(JWTokenPassed.class)
                     .orElseThrow(() -> new UnauthorizedException("Client needs the Authorization-header to access the method"));
-            if (ctx.get(JWTokenPassed.class).getSubject() != Subject.USER) {
+            if (!ctx.get(JWTokenPassed.class).getSubject().equals(Subject.USER)) {
                 throw new UnauthorizedException("Client needs to be an user");
             }
             contextConsumer.handle(ctx);
