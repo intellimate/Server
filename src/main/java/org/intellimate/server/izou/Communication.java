@@ -45,7 +45,7 @@ public class Communication implements RequestHelper {
         this.izouInstanceOperations = izouInstanceOperations;
     }
 
-    public Promise<HttpResponse> handleRequest(Context context) {
+    public void handleRequest(Context context) {
         String uri = context.getRequest().getUri();
         int userID = assertParameterInt(context, "id");
         int izouId = assertParameterInt(context, "izouId");
@@ -74,7 +74,7 @@ public class Communication implements RequestHelper {
         params.add(HttpRequest.Param.newBuilder().setKey("user").addValue(String.valueOf(userID)).build());
         params.add(HttpRequest.Param.newBuilder().setKey("izou").addValue(String.valueOf(izouId)).build());
         jwt.getApp().ifPresent(id -> params.add(HttpRequest.Param.newBuilder().setKey("app").addValue(String.valueOf(id)).build()));
-        return context.getRequest().getBody()
+        context.getRequest().getBody()
                 .map(data -> HttpRequest.newBuilder()
                         .setUrl(path)
                         .setContentType(context.getRequest().getContentType().getType())
@@ -85,7 +85,17 @@ public class Communication implements RequestHelper {
                         )
                         .build()
                 )
-                .flatMap(httpRequest -> communicate(httpRequest, izouId));
+                .flatMap(httpRequest -> communicate(httpRequest, izouId))
+                .map(httpResponse -> {
+                    context.getResponse().status(httpResponse.getStatus());
+                    httpResponse.getHeadersList()
+                            .forEach(header -> context.getResponse().getHeaders().set(header.getKey(), header.getValueList()));
+                    if (!httpResponse.getContentType().equals("")) {
+                        context.getResponse().contentType(httpResponse.getContentType());
+                    }
+                    return httpResponse.getBody().toByteArray();
+                })
+                .then(bytes -> context.getResponse().send(bytes));
     }
 
     public void startServer() throws IOException {
