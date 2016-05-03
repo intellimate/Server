@@ -101,6 +101,13 @@ public class Main {
             System.exit(-1);
         }
 
+        try {
+            databaseManager.initDatabase();
+        } catch (SQLException e) {
+            logger.error("unable to initialize database", e);
+            System.exit(-1);
+        }
+
         AppOperations appOperations = new AppOperations(databaseManager.getContext());
         IzouInstanceOperations izouInstanceOperations = new IzouInstanceOperations(databaseManager.getContext());
         IzouOperations izouOperations = new IzouOperations(databaseManager.getContext());
