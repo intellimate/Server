@@ -120,19 +120,26 @@ public class DatabaseManager {
             try {
                 context.selectFrom(Tables.APP).fetchAny();
             } catch (DataAccessException e) {
-                //TODO: need better idea, but meta() and systable are not working
-                String tables = initScript.substring(0, initScript.indexOf("DELIMITER $$"));
-                ScriptRunner scriptRunner = new ScriptRunner(ds.getConnection());
-                scriptRunner.setLogWriter(null);
-                scriptRunner.setDelimiter(";");
-                scriptRunner.runScript(new StringReader(tables));
-                String delimiter = "DELIMITER $$";
-                String trigger = initScript.substring(initScript.indexOf(delimiter) + delimiter.length(), initScript.lastIndexOf("DELIMITER ;"));
-                scriptRunner = new ScriptRunner(ds.getConnection());
-                scriptRunner.setLogWriter(null);
-                scriptRunner.setDelimiter("$$");
-                scriptRunner.runScript(new StringReader(trigger));
-
+                int delimiterIndex = initScript.indexOf("DELIMITER $$");
+                //check whether we have triggers etc.
+                if (delimiterIndex == -1) {
+                    ScriptRunner scriptRunner = new ScriptRunner(ds.getConnection());
+                    scriptRunner.setLogWriter(null);
+                    scriptRunner.setDelimiter(";");
+                    scriptRunner.runScript(new StringReader(initScript));
+                } else {
+                    String tables = initScript.substring(0, delimiterIndex);
+                    ScriptRunner scriptRunner = new ScriptRunner(ds.getConnection());
+                    scriptRunner.setLogWriter(null);
+                    scriptRunner.setDelimiter(";");
+                    scriptRunner.runScript(new StringReader(tables));
+                    String delimiter = "DELIMITER $$";
+                    String trigger = initScript.substring(delimiterIndex + delimiter.length(), initScript.lastIndexOf("DELIMITER ;"));
+                    scriptRunner = new ScriptRunner(ds.getConnection());
+                    scriptRunner.setLogWriter(null);
+                    scriptRunner.setDelimiter("$$");
+                    scriptRunner.runScript(new StringReader(trigger));
+                }
             }
         } catch (IOException e) {
             System.err.println("unable to read database-init script");
