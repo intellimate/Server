@@ -17,5 +17,9 @@ COPY image/run.sh run.sh
 
 #web
 EXPOSE 4567
+#izou-communication
+EXPOSE 4000
+
+VOLUME bin/data
 
 ENTRYPOINT ["/run.sh"]

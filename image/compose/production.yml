@@ -13,5 +13,3 @@ services:
         service: db_izou
     command:
         - --character-set-server=utf8mb4
-    ports:
-         - "3306:3306"

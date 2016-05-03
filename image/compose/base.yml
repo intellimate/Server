@@ -1,0 +1,19 @@
+version: '2'
+services:
+  server:
+    image: intellimate/server:0.5
+    environment:
+      domain: http://${DOCKERIP}:4567/
+    ports:
+       - "4567:4567"
+       - "4000:4000"
+
+  db_izou:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: izoudb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 123456
+      MYSQL_ROOT_PASSWORD: root
+    command:
+        - --character-set-server=utf8mb4
