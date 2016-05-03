@@ -99,7 +99,7 @@ public class Communication implements RequestHelper {
     }
 
     public void startServer() throws IOException {
-        serverSocket = new ServerSocket(40);
+        serverSocket = new ServerSocket(4000);
         executorService.execute(() -> {
             while (run) {
                 try {
