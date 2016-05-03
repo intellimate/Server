@@ -17,6 +17,9 @@ public class LocalFiles implements FileStorage {
 
     public LocalFiles(File baseDir, String baseDomain) {
         this.baseDir = baseDir;
+        if (!baseDir.exists()) {
+            baseDir.mkdir();
+        }
         this.baseFileDomain = baseDomain + "/files/";
     }
 
@@ -35,8 +38,8 @@ public class LocalFiles implements FileStorage {
                 throw new InternalServerErrorException(String.format("unable to create file %s", name), e);
             }
         }
-        try {
-            ByteStreams.copy(inputStream, new FileOutputStream(file));
+        try(FileOutputStream fileInput = new FileOutputStream(file)) {
+            ByteStreams.copy(inputStream, fileInput);
         } catch (IOException e) {
             throw new InternalServerErrorException(String.format("unable to save %s", name), e);
         }
