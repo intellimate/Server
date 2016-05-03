@@ -114,7 +114,7 @@ public class DatabaseManager {
         try (InputStream in = DatabaseManager.class.getResourceAsStream("/db.sql")) {
             String initScript = IOUtils.toString(in, "UTF-8");
             if (Boolean.getBoolean("dropSchema")) {
-                String drop = "DROP DATABASE `crowdcontrol`;";
+                String drop = "DROP DATABASE `izoudb`;";
                 context.execute(drop);
             }
             try {
