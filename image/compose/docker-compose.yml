@@ -1,0 +1,22 @@
+version: '2'
+services:
+  server:
+    image: intellimate/server:latest
+    environment:
+      domain: http://${DOCKERIP}:4567/
+    links:
+       - db:db
+    depends_on:
+       - db
+
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: crowdcontrol
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 123456
+      MYSQL_ROOT_PASSWORD: root
+    command:
+        - --character-set-server=utf8mb4
+    ports:
+         - "3306:3306"
