@@ -1,7 +1,7 @@
 version: '2'
 services:
   server:
-    image: intellimate/server:0.5
+    image: intellimate/server:latest
     environment:
       domain: http://${DOCKERIP}:4567/
     ports:
