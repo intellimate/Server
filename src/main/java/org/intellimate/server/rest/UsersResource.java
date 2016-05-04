@@ -63,6 +63,27 @@ public class UsersResource {
     }
 
     /**
+     * returns the user for the id
+     * @param jwtID the authorized id
+     * @param id the requested id
+     * @return the user
+     */
+    public User getUser(int jwtID, int id) {
+        if (jwtID != id) {
+            throw new UnauthorizedException("Not allowed to request user "+id);
+        }
+        return userOperations.getUser(id)
+                .map(record ->
+                        User.newBuilder()
+                                .setUsername(record.getName())
+                                .setId(id)
+                                .setEmail(record.getEmail())
+                                .build()
+                )
+                .orElseThrow(() -> new BadRequestException("user not existing: ", id));
+    }
+
+    /**
      * removes the user from the database
      * @param id the user to remove
      * @param jwTokenPassed the jwt passed

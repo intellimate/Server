@@ -120,24 +120,21 @@ public class RatpackRouter implements RequestHelper {
                                                         .map(message -> authentication.login(message.getEmail(), message.getPassword()))
                                         );
                                     })
-                                    .get("authentication/apps/:izouId/:app",
+                                    .post("authentication/apps/:izouId/:app",
                                             assureUser(ctx -> authentication.app(
                                                     ctx.get(JWTokenPassed.class).getId(),
                                                     assertParameterInt(ctx, "izouId"),
                                                     assertParameter(ctx, "app")))
                                     )
-                                    .post("users", ctx -> {
-                                        ctx.render(
-                                                merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
-                                                        .map(message -> authentication.login(message.getEmail(), message.getPassword()))
-                                        );
-                                    })
                                     .put("users", ctx -> {
                                         ctx.render(
                                                 merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
                                                         .map(message -> usersResource.addUser(message.getUsername(), message.getEmail(), message.getPassword()))
                                         );
                                     })
+                                    .get("users/:id", assureUser(ctx -> ctx.render(
+                                            usersResource.getUser(ctx.get(JWTokenPassed.class).getId(), assertParameterInt(ctx, "id"))
+                                    )))
                                     .put("users/:id/izou", assureUser(ctx -> ctx.render(
                                             merge(ctx, IzouInstance.newBuilder(), Arrays.asList(IzouInstance.ID_FIELD_NUMBER, IzouInstance.TOKEN_FIELD_NUMBER))
                                                     .map(message -> usersResource.addIzouInstance(assertParameterInt(ctx, "id"), message.getName(), ctx.get(JWTokenPassed.class)))
