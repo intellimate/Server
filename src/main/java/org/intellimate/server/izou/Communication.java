@@ -99,6 +99,7 @@ public class Communication implements RequestHelper {
     }
 
     public void startServer() throws IOException {
+        //TODO SSL!
         serverSocket = new ServerSocket(4000);
         executorService.execute(() -> {
             while (run) {
