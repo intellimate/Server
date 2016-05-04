@@ -1,5 +1,6 @@
 package org.intellimate.server;
 
+import org.intellimate.server.proto.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ratpack.error.ServerErrorHandler;
@@ -34,38 +35,38 @@ public class ErrorHandler implements ServerErrorHandler {
         } else if (throwable instanceof BadRequestException) {
             logger.debug("bad request", throwable);
             context.getResponse().status(400);
-            //context.render(error("badRequest", throwable.getMessage()));
+            context.render(error("badRequest", throwable.getMessage()));
         } else if (throwable instanceof InternalServerErrorException) {
             InternalServerErrorException internalError = (InternalServerErrorException) throwable;
             logger.error("an internal error occurred", internalError);
             context.getResponse().status(500);
-            //context.render(error("internalServerError", internalError.getMessage()));
+            context.render(error("internalServerError", internalError.getMessage()));
         } else if (throwable instanceof UnauthorizedException) {
             logger.debug("unauthorized access", throwable);
             context.getResponse().status(401);
-            //context.render(error("unauthorized", throwable.getMessage()));
+            context.render(error("unauthorized", throwable.getMessage()));
         } else if (throwable instanceof NotFoundException) {
             logger.debug("not found", throwable);
             context.getResponse().status(404);
-            //context.render(error("resource not found", throwable.getMessage()));
+            context.render(error("resource not found", throwable.getMessage()));
         }
 
         else {
             logger.error("an internal error occurred", throwable);
             context.getResponse().status(500);
-            //context.render(error("internalServerError", throwable.getMessage()));
+            context.render(error("internalServerError", throwable.getMessage()));
         }
     }
 
-/*    *//**
+    /**
      * Creates an error response
      *
      * @param code Short error code to make errors machine readable
      * @param detail Detailed error message for humans
      *
      * @return Encoded message
-     *//*
+     */
     private ErrorResponse error( String code, String detail) {
         return ErrorResponse.newBuilder().setCode(code).setDetail(detail).build();
-    }*/
+    }
 }
