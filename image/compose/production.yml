@@ -4,12 +4,22 @@ services:
     extends:
         file: base.yml
         service: server
+    environment:
+        domain: http://${DOCKERIP}:4567/
+        jwt.secret: ${JWT}
     links:
        - db_izou:db_izou
+    restart: always
 
   db_izou:
     extends:
         file: base.yml
         service: db_izou
+    environment:
+          MYSQL_DATABASE: izoudb
+          MYSQL_USER: ${MYSQLUSER}
+          MYSQL_PASSWORD: ${MYSQLUSERPASS}
+          MYSQL_ROOT_PASSWORD: ${MYSQLROOT}
     command:
         - --character-set-server=utf8mb4
+    restart: always
