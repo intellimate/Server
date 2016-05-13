@@ -1,5 +1,6 @@
 package org.intellimate.server;
 
+import ch.qos.logback.core.net.ssl.SSL;
 import org.intellimate.server.data.FileStorage;
 import org.intellimate.server.data.GCS;
 import org.intellimate.server.data.LocalFiles;
@@ -144,7 +145,9 @@ public class Main {
                 ? Integer.parseInt(portRaw)
                 : 4567;
 
-        Communication communication = new Communication(jwtHelper, izouInstanceOperations);
+        boolean sslEnabled = "true".equals(getProperty("SSL"));
+
+        Communication communication = new Communication(jwtHelper, izouInstanceOperations, sslEnabled);
 
         try {
             communication.startServer();
