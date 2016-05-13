@@ -12,6 +12,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 
+import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
+
 /**
  * this class creates and reads the JWT (Json Web Token)
  * @author LeanderK
@@ -19,7 +21,7 @@ import java.util.Date;
  */
 public class JWTHelper {
     private static final Logger logger = LoggerFactory.getLogger(JWTHelper.class);
-    private static final String REFRESH_CLAIM = "refresh";
+    private static final String REFRESH_CLAIM = "refreshIzou";
     private static final String ID_CLAIM = "sid";
     private static final String APP = "app";
     private final String secret;
@@ -87,7 +89,7 @@ public class JWTHelper {
     }
 
     /**
-     * creates the izou JWT-refresh token (has no expiration-date)
+     * creates the izou JWT-refreshIzou token (has no expiration-date)
      * @param id the id of the izou-instance
      * @return the JWT string
      */
