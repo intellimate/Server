@@ -106,7 +106,7 @@ public class Communication implements RequestHelper {
         if (!sslEnabled) {
             serverSocket = new ServerSocket(4000);
         } else {
-            System.setProperty("javax.net.ssl.keyStore", "./keystore.jks");
+            System.setProperty("javax.net.ssl.keyStore", "../keystore.jks");
             System.setProperty("javax.net.ssl.keyStorePassword", "IZOU");
             ServerSocketFactory socketFactory = SSLServerSocketFactory.getDefault();
             serverSocket = socketFactory.createServerSocket(4000);
