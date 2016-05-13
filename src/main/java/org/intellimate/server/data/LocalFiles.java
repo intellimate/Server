@@ -59,11 +59,11 @@ public class LocalFiles implements FileStorage {
 
     @Override
     public synchronized String getLink(String name) {
-        return baseDir+name+".izou";
+        return baseFileDomain+name+".izou";
     }
 
     @Override
     public String getLinkForExactName(String name) {
-        return baseDir+name;
+        return baseFileDomain+name;
     }
 }
