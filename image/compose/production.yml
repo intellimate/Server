@@ -13,7 +13,7 @@ services:
       - DATABASE_PW=${MYSQLUSERPASS}
     volumes:
       - /etc/letsencrypt:/ssl:ro
-      - ./data/izou:/data/izou
+      - ${DATA}:/data/izou
     links:
        - db_izou:dbizou
     ports:
@@ -38,7 +38,7 @@ services:
     volumes:
       - /etc/letsencrypt:/ssl:ro
       - /etc/ssl/certs/dhparam.pem:/etc/ssl/certs/dhparam.pem:ro
-      - ./data/izou:/data/izou
+      - ${DATA}:/data/izou
     links:
       - server:server
     ports:
