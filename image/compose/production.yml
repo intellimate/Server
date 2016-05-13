@@ -12,8 +12,6 @@ services:
     volumes:
       - /etc/letsencrypt:/ssl:ro
       - ./data/izou:/data/izou
-    depends_on:
-      - nginx
     links:
        - db_izou:db_izou
     ports:
@@ -39,6 +37,8 @@ services:
       - /etc/letsencrypt:/ssl:ro
       - /etc/ssl/certs/dhparam.pem:/etc/ssl/certs/dhparam.pem:ro
       - ./data/izou:/data/izou
+    links:
+      - server:server
     ports:
       - "80:80"
       - "443:443"
