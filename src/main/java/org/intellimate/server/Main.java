@@ -82,14 +82,14 @@ public class Main {
      * initializes and starts the server
      */
     public void boot() {
-        String url = requireProperty("database.url");
-        String username = requireProperty("database.username");
-        String password = requireProperty("database.password");
-        String databasePool = requireProperty("database.poolName");
+        String url = requireProperty("DATABASE_URL");
+        String username = requireProperty("DATABASE_USER");
+        String password = requireProperty("DATABASE_PW");
+        String databasePool = getProperty("DATABASE_POOL");
 
         SQLDialect dialect = null;
         try {
-            dialect = SQLDialect.valueOf(requireProperty("database.dialect").trim());
+            dialect = SQLDialect.valueOf(requireProperty("DATABASE_DIALECT").trim());
         } catch (NullPointerException e) {
             logger.error("database.dialect not set");
             System.exit(-1);
@@ -114,16 +114,16 @@ public class Main {
         IzouOperations izouOperations = new IzouOperations(databaseManager.getContext());
         UserOperations userOperations = new UserOperations(databaseManager.getContext());
 
-        String domain = requireProperty("domain");
+        String domain = requireProperty("DOMAIN");
 
         FileStorage fileStorage;
         String fileDir;
-        String gcs = getProperty("gcs");
+        String gcs = getProperty("GCS");
         if (gcs != null) {
             fileStorage = new GCS();
             fileDir = null;
         } else {
-            fileDir = requireProperty("local.filedir");
+            fileDir = requireProperty("LOCAL_FILE_DIR");
             File file = new File(fileDir);
             if (!file.exists() || !file.isDirectory()) {
                 logger.error(String.format("file %s must exist and be a directory", fileDir));
@@ -132,14 +132,14 @@ public class Main {
             fileStorage = new LocalFiles(file, domain);
         }
 
-        JWTHelper jwtHelper = new JWTHelper(requireProperty("jwt.secret"));
+        JWTHelper jwtHelper = new JWTHelper(requireProperty("JWT"));
 
         AppResource appResource = new AppResource(appOperations, fileStorage, userOperations);
         Authentication authentication = new Authentication(izouInstanceOperations, userOperations, jwtHelper);
         IzouResource izouResource = new IzouResource(izouOperations, userOperations, fileStorage);
         UsersResource usersResource = new UsersResource(userOperations, izouInstanceOperations, jwtHelper);
 
-        String portRaw = getProperty("router.port");
+        String portRaw = getProperty("ROUTER_PORT");
 
         int port = portRaw != null
                 ? Integer.parseInt(portRaw)

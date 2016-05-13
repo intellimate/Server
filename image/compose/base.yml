@@ -3,9 +3,8 @@ services:
   server:
     image: intellimate/server:latest
     environment:
-      domain: http://${DOCKERIP}:4567/
-      jwt.secret: bGFtYWJhZGExMzY3OPxpbw==
-      local.filedir: /data/izou
+      DOMAIN: http://${DOCKERIP}:4567/
+      LOCAL_FILE_DIR: /data/izou
 
   db_izou:
     image: mysql:latest

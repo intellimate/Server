@@ -7,7 +7,7 @@ services:
     volumes:
       - /data/izou
     links:
-       - db_izou:db_izou
+       - db_izou:dbizou
     ports:
        - "4567:4567"
        - "4000:4000"
