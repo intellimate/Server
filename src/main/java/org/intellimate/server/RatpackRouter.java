@@ -72,7 +72,7 @@ public class RatpackRouter implements RequestHelper {
         this.fileDir = fileDir;
     }
 
-    //TODO: correct handling of refresh vs. auth tokens?
+    //TODO: correct handling of refreshIzou vs. auth tokens?
     public void init() throws Exception {
         Registry registry = Registry.builder()
                 .add(messageRenderer)
@@ -111,9 +111,9 @@ public class RatpackRouter implements RequestHelper {
                                         ctx.getResponse().contentType("text/plain");
                                         ctx.render("");
                                     })
-                                    .post("authentication/izou", assureIzou(ctx -> {
-                                        ctx.render(authentication.refresh(ctx.get(JWTokenPassed.class).getId()));
-                                    }))
+                                    .post("authentication/refreshIzou/izou", ctx ->
+                                            ctx.render(authentication.refreshIzou(ctx.get(JWTokenPassed.class)))
+                                    )
                                     .post("authentication/users", ctx -> {
                                         ctx.render(
                                                 merge(ctx, User.newBuilder(), Arrays.asList(User.ID_FIELD_NUMBER, User.USERNAME_FIELD_NUMBER))
@@ -148,15 +148,13 @@ public class RatpackRouter implements RequestHelper {
                                     .prefix("users/:id/izou/:izouId/:command", chain2 -> chain2.all(communication::handleRequest))
                                     .get("izou", ctx -> ctx.render(izouResource.getCurrentVersion()))
                                     .put("izou/:major/:minor/:patch", assureUser(ctx -> ctx.render(
-                                            ctx.getRequest().getBodyStream().toPromise()
-                                                    .map(byteBuf ->
+                                            ctx.getRequest().getBody().map(data ->
                                                             izouResource.putIzou(
                                                                     assertParameterInt(ctx, "major"),
                                                                     assertParameterInt(ctx, "minor"),
                                                                     assertParameterInt(ctx, "patch"),
                                                                     ctx.get(JWTokenPassed.class).getId(),
-                                                                    //byteBuf.) TODO: stream
-                                                                    null)
+                                                                    data.getInputStream())
                                                     )
                                             ))
                                     )
@@ -300,6 +298,8 @@ public class RatpackRouter implements RequestHelper {
                     .orElseThrow(() -> new UnauthorizedException("Client needs the Authorization-header to access the method"));
             if (!ctx.get(JWTokenPassed.class).getSubject().equals(Subject.IZOU)) {
                 throw new UnauthorizedException("Client needs to be an izou-instance");
+            } else if (ctx.get(JWTokenPassed.class).isRefresh()) {
+                throw new UnauthorizedException("Token is refresh token");
             }
             contextConsumer.handle(ctx);
         };
@@ -316,6 +316,8 @@ public class RatpackRouter implements RequestHelper {
                     .orElseThrow(() -> new UnauthorizedException("Client needs the Authorization-header to access the method"));
             if (!ctx.get(JWTokenPassed.class).getSubject().equals(Subject.USER)) {
                 throw new UnauthorizedException("Client needs to be an user");
+            } else if (ctx.get(JWTokenPassed.class).isRefresh()) {
+                throw new UnauthorizedException("Token is refresh token");
             }
             contextConsumer.handle(ctx);
         };
