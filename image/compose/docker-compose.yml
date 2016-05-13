@@ -4,8 +4,13 @@ services:
     extends:
         file: base.yml
         service: server
+    volumes:
+      - /data/izou
     links:
        - db_izou:db_izou
+    ports:
+       - "4567:4567"
+       - "4000:4000"
 
   db_izou:
     extends:

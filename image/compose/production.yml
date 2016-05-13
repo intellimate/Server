@@ -7,8 +7,17 @@ services:
     environment:
         domain: http://${DOCKERIP}:4567/
         jwt.secret: ${JWT}
+        SSL: true
+        local.filedir: /data/izou
+    volumes:
+      - /etc/letsencrypt:/ssl:ro
+      - ./data/izou:/data/izou
+    depends_on:
+      - nginx
     links:
        - db_izou:db_izou
+    ports:
+       - "4000:4000"
     restart: always
 
   db_izou:
@@ -22,4 +31,15 @@ services:
           MYSQL_ROOT_PASSWORD: ${MYSQLROOT}
     command:
         - --character-set-server=utf8mb4
+    restart: always
+
+  nginx:
+    image: intellimate/nginx:latest
+    volumes:
+      - /etc/letsencrypt:/ssl:ro
+      - /etc/ssl/certs/dhparam.pem:/etc/ssl/certs/dhparam.pem:ro
+      - ./data/izou:/data/izou
+    ports:
+      - "80:80"
+      - "443:443"
     restart: always

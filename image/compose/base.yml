@@ -4,9 +4,8 @@ services:
     image: intellimate/server:latest
     environment:
       domain: http://${DOCKERIP}:4567/
-    ports:
-       - "4567:4567"
-       - "4000:4000"
+      jwt.secret: bGFtYWJhZGExMzY3OPxpbw==
+      local.filedir: /data/izou
 
   db_izou:
     image: mysql:latest
