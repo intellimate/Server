@@ -5,12 +5,12 @@ services:
         file: base.yml
         service: server
     environment:
-        DOMAIN: http://${API}/
-        JWT: ${JWT}
-        SSL: true
-        LOCAL_FILE_DIR: /data/izou
-        DATABASE_USER: ${MYSQLUSER}
-        DATABASE_PW: ${MYSQLUSERPASS}
+      - DOMAIN=http://${API}/
+      - JWT=${JWT}
+      - SSL=true
+      - LOCAL_FILE_DIR=/data/izou
+      - DATABASE_USER=${MYSQLUSER}
+      - DATABASE_PW=${MYSQLUSERPASS}
     volumes:
       - /etc/letsencrypt:/ssl:ro
       - ./data/izou:/data/izou
