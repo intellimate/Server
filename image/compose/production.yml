@@ -5,7 +5,7 @@ services:
         file: base.yml
         service: server
     environment:
-        domain: http://${DOCKERIP}:4567/
+        domain: http://${API}/
         jwt.secret: ${JWT}
         SSL: true
         local.filedir: /data/izou
