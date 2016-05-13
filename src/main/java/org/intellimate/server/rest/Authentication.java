@@ -6,6 +6,8 @@ import org.intellimate.server.UnauthorizedException;
 import org.intellimate.server.database.model.tables.records.UserRecord;
 import org.intellimate.server.database.operations.IzouInstanceOperations;
 import org.intellimate.server.database.operations.UserOperations;
+import org.intellimate.server.jwt.JWTokenPassed;
+import org.intellimate.server.jwt.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -49,7 +51,7 @@ public class Authentication {
     }
 
     /**
-     * handles the refresh requests from the izou-instances
+     * handles the refreshIzou requests from the izou-instances
      * @param userId the id of the user
      * @param izouId the id of the izou-instance
      * @param app the id of the app
@@ -66,16 +68,21 @@ public class Authentication {
     }
 
     /**
-     * handles the refresh requests from the izou-instances
-     * @param id the id of the izou-instance from the refresh-token
+     * handles the refreshIzou requests from the izou-instances
+     * @param token the refresh token
      * @return if valid an access jwt-token
      */
-    public String refresh(int id) {
-        boolean valid = izouInstanceOperations.validateIzouInstanceID(id);
+    public String refreshIzou(JWTokenPassed token) {
+        if (!token.getSubject().equals(Subject.USER)) {
+            throw new UnauthorizedException("Client needs to be an user");
+        } else if (!token.isRefresh()) {
+            throw new UnauthorizedException("Token must be refresh token");
+        }
+        boolean valid = izouInstanceOperations.validateIzouInstanceID(token.getId());
         if (valid) {
-            return jwtHelper.generateIzouAccessJWT(id);
+            return jwtHelper.generateIzouAccessJWT(token.getId());
         } else {
-            logger.info("invalid izou id", id);
+            logger.info("invalid izou id", token.getId());
             throw new UnauthorizedException("Invalid JWT, the registered instance was removed");
         }
     }
