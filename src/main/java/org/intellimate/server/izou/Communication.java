@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import ratpack.exec.Promise;
 import ratpack.handling.Context;
 
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,10 +41,12 @@ public class Communication implements RequestHelper {
     private ServerSocket serverSocket;
     private final JWTHelper jwtHelper;
     private final IzouInstanceOperations izouInstanceOperations;
+    private final boolean sslEnabled;
 
-    public Communication(JWTHelper jwtHelper, IzouInstanceOperations izouInstanceOperations) {
+    public Communication(JWTHelper jwtHelper, IzouInstanceOperations izouInstanceOperations, boolean sslEnabled) {
         this.jwtHelper = jwtHelper;
         this.izouInstanceOperations = izouInstanceOperations;
+        this.sslEnabled = sslEnabled;
     }
 
     public void handleRequest(Context context) {
@@ -99,8 +103,14 @@ public class Communication implements RequestHelper {
     }
 
     public void startServer() throws IOException {
-        //TODO SSL!
-        serverSocket = new ServerSocket(4000);
+        if (!sslEnabled) {
+            serverSocket = new ServerSocket(4000);
+        } else {
+            System.setProperty("javax.net.ssl.keyStore", "./keystore.jks");
+            System.setProperty("javax.net.ssl.keyStorePassword", "IZOU");
+            ServerSocketFactory socketFactory = SSLServerSocketFactory.getDefault();
+            serverSocket = socketFactory.createServerSocket(4000);
+        }
         executorService.execute(() -> {
             while (run) {
                 try {
