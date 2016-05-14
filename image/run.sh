@@ -1,7 +1,8 @@
 #!/bin/bash
 echo The options are: $@
-echo SSL: ${SSL}
-echo file: {-f keystore.jks}
+echo "SSL: $SSL"
+fileExists=$(-f keystore.jks)
+echo "file: $fileExists"
 #if [[ -z "$SSL" && ! -f keystore.jks ]]; then
 #    echo generating keystore
     openssl pkcs12 -export -in /ssl/live/izou.info/fullchain.pem -inkey /ssl/live/izou.info/privkey.pem -out pkcs.p12 -name IZOU -passout pass:pass
