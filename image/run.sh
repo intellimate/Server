@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 echo The options are: $@
 if [[ -z "$SSL" && ! -f keystore.jks ]]; then
     echo generating keystore
