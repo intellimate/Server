@@ -1,6 +1,5 @@
 package org.intellimate.server;
 
-import ch.qos.logback.core.net.ssl.SSL;
 import org.intellimate.server.data.FileStorage;
 import org.intellimate.server.data.GCS;
 import org.intellimate.server.data.LocalFiles;
@@ -11,6 +10,7 @@ import org.intellimate.server.database.operations.IzouOperations;
 import org.intellimate.server.database.operations.UserOperations;
 import org.intellimate.server.izou.Communication;
 import org.intellimate.server.jwt.JWTHelper;
+import org.intellimate.server.mail.MailHandler;
 import org.intellimate.server.rest.AppResource;
 import org.intellimate.server.rest.Authentication;
 import org.intellimate.server.rest.IzouResource;
@@ -134,10 +134,15 @@ public class Main {
 
         JWTHelper jwtHelper = new JWTHelper(requireProperty("JWT"));
 
+        boolean emailDisabled = "true".equals(getProperty("EMAIL_DISABLED"));
+        String sendgridKey = requireProperty("SENDGRID", emailDisabled);
+        String delivery_email = requireProperty("DELIVERY_EMAIL", emailDisabled);
+        MailHandler mailHandler = new MailHandler(jwtHelper, emailDisabled, sendgridKey, delivery_email);
+
         AppResource appResource = new AppResource(appOperations, fileStorage, userOperations);
         Authentication authentication = new Authentication(izouInstanceOperations, userOperations, jwtHelper);
         IzouResource izouResource = new IzouResource(izouOperations, userOperations, fileStorage);
-        UsersResource usersResource = new UsersResource(userOperations, izouInstanceOperations, jwtHelper);
+        UsersResource usersResource = new UsersResource(userOperations, izouInstanceOperations, appOperations, jwtHelper, mailHandler);
 
         String portRaw = getProperty("ROUTER_PORT");
 
@@ -176,17 +181,28 @@ public class Main {
 
     /**
      * returns the system-property if present and if not falls back to the
+     * config file. Exits if not existing. Behaviour can be disabled by passing false.
+     * @param key the key to search for
+     * @param disabled whether to shut down if no key found
+     * @return the String
+     */
+    private String requireProperty(String key, boolean disabled) {
+        String result = getProperty(key);
+        if (result == null && !disabled) {
+            logger.error(String.format("application requires key %s set", key));
+            System.exit(-1);
+        }
+        return result;
+    }
+
+    /**
+     * returns the system-property if present and if not falls back to the
      * config file. Exits if not existing
      * @param key the key to search for
      * @return the String
      */
     private String requireProperty(String key) {
-        String result = getProperty(key);
-        if (result == null) {
-            logger.error(String.format("application requires key %s set", key));
-            System.exit(-1);
-        }
-        return result;
+        return requireProperty(key, true);
     }
 
     /**
