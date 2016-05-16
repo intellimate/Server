@@ -34,7 +34,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class User extends TableImpl<UserRecord> {
 
-    private static final long serialVersionUID = 1458873448;
+    private static final long serialVersionUID = -2138614788;
 
     /**
      * The reference instance of <code>izoudb.User</code>
@@ -73,6 +73,11 @@ public class User extends TableImpl<UserRecord> {
      * The column <code>izoudb.User.root</code>.
      */
     public final TableField<UserRecord, Boolean> ROOT = createField("root", org.jooq.impl.SQLDataType.BIT.nullable(false), this, "");
+
+    /**
+     * The column <code>izoudb.User.confirmed</code>.
+     */
+    public final TableField<UserRecord, Boolean> CONFIRMED = createField("confirmed", org.jooq.impl.SQLDataType.BIT.nullable(false), this, "");
 
     /**
      * Create a <code>izoudb.User</code> table reference
