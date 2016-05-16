@@ -111,6 +111,7 @@ public class RatpackRouter implements RequestHelper {
                                         ctx.getResponse().contentType("text/plain");
                                         ctx.render("");
                                     })
+                                    //authentication
                                     .post("authentication/refreshIzou/izou", ctx ->
                                             ctx.render(authentication.refreshIzou(ctx.get(JWTokenPassed.class)))
                                     )
@@ -126,19 +127,44 @@ public class RatpackRouter implements RequestHelper {
                                                     assertParameterInt(ctx, "izouId"),
                                                     assertParameter(ctx, "app")))
                                     )
+                                    //user
+                                    .get("users/:id", assureUser(ctx -> ctx.render(
+                                            usersResource.getUser(ctx.get(JWTokenPassed.class).getId(), assertParameterInt(ctx, "id"))
+                                    )))
+                                    .get("users/:id/confirm/:token", ctx -> {
+                                        usersResource.confirmUser(jwtHelper.parseToken(assertParameter(ctx, "token")));
+                                    })
+                                    .get("users/:id/apps", assureUser(ctx -> ctx.render(
+                                            usersResource.getUsersApps(ctx.get(JWTokenPassed.class).getId())
+                                    )))
+                                    .patch("users/:id", assureUser(ctx -> ctx.render(
+                                            merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
+                                                    .map(message -> usersResource.patchUser(message.build(), ctx.get(JWTokenPassed.class).getId()))
+                                    )))
                                     .put("users", ctx -> {
                                         ctx.render(
                                                 merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
                                                         .map(message -> usersResource.addUser(message.getUsername(), message.getEmail(), message.getPassword()))
                                         );
                                     })
-                                    .get("users/:id", assureUser(ctx -> ctx.render(
-                                            usersResource.getUser(ctx.get(JWTokenPassed.class).getId(), assertParameterInt(ctx, "id"))
-                                    )))
+                                    .put("users/:id/reset-password/reset/", ctx -> {
+                                        JWTokenPassed token = ctx.maybeGet(JWTokenPassed.class)
+                                                .orElseThrow(() -> new UnauthorizedException("Request must be authenticated"));
+                                        merge(ctx, User.newBuilder(), Arrays.asList(User.ID_FIELD_NUMBER, User.USERNAME_FIELD_NUMBER, User.EMAIL_FIELD_NUMBER))
+                                                    .then(message -> usersResource.resetPassword(token, message.getPassword()));
+                                    })
                                     .put("users/:id/izou", assureUser(ctx -> ctx.render(
                                             merge(ctx, IzouInstance.newBuilder(), Arrays.asList(IzouInstance.ID_FIELD_NUMBER, IzouInstance.TOKEN_FIELD_NUMBER))
                                                     .map(message -> usersResource.addIzouInstance(assertParameterInt(ctx, "id"), message.getName(), ctx.get(JWTokenPassed.class)))
                                     )))
+                                    .put("users/resend-confirmation", ctx ->
+                                            merge(ctx, User.newBuilder(), Arrays.asList(User.ID_FIELD_NUMBER, User.USERNAME_FIELD_NUMBER, User.PASSWORD_FIELD_NUMBER))
+                                                    .then(message -> usersResource.resendConfirmationEmail(message.getEmail()))
+                                    )
+                                    .put("users/reset-password/init", ctx ->
+                                            merge(ctx, User.newBuilder(), Arrays.asList(User.ID_FIELD_NUMBER, User.USERNAME_FIELD_NUMBER, User.PASSWORD_FIELD_NUMBER))
+                                                    .then(message -> usersResource.sendPasswordResetEmail(message.getEmail()))
+                                    )
                                     .delete("users/:id", assureUser(ctx ->
                                             usersResource.removeUser(assertParameterInt(ctx, "id"), ctx.get(JWTokenPassed.class)))
                                     )
@@ -146,6 +172,7 @@ public class RatpackRouter implements RequestHelper {
                                             usersResource.removeIzouInstance(assertParameterInt(ctx, "id"), assertParameterInt(ctx, "izouid"), ctx.get(JWTokenPassed.class)))
                                     )
                                     .prefix("users/:id/izou/:izouId/:command", chain2 -> chain2.all(communication::handleRequest))
+                                    //izou
                                     .get("izou", ctx -> ctx.render(izouResource.getCurrentVersion()))
                                     .put("izou/:major/:minor/:patch", assureUser(ctx -> ctx.render(
                                             ctx.getRequest().getBody().map(data ->
@@ -158,6 +185,7 @@ public class RatpackRouter implements RequestHelper {
                                                     )
                                             ))
                                     )
+                                    //apps
                                     .get("apps", doPaginated(appResource::listApps))
                                     .get("apps/search/:keyword", doPaginated((from, next, ctx) -> {
                                         String keyword = assertParameter(ctx, "keyword");
