@@ -1,5 +1,6 @@
 package org.intellimate.server.rest;
 
+import org.intellimate.server.BadRequestException;
 import org.intellimate.server.jwt.JWTHelper;
 import org.intellimate.server.NotFoundException;
 import org.intellimate.server.UnauthorizedException;
@@ -42,6 +43,9 @@ public class Authentication {
         Objects.nonNull(password);
         UserRecord user = userOperations.getUser(email)
                 .orElseThrow(() -> new NotFoundException("no user found for email: " + email));
+        if (!user.getConfirmed()) {
+            throw new BadRequestException("User is not confirmed yet");
+        }
         boolean valid = BCrypt.checkpw(password, user.getPassword());
         if (valid) {
             return jwtHelper.generateUserAccessJWT(user.getIdUser());
