@@ -156,10 +156,12 @@ public class JWTHelper {
             throw new UnauthorizedException("Illegal JWT, id is not an integer");
         }
         Object rawApp = claimsJws.getBody().get(APP);
+        Object rawEmail = claimsJws.getBody().get(EMAIL);
         return new JWTokenPassed(Subject.valueOf(claimsJws.getBody().getSubject()),
                 claimsJws.getBody().containsKey(REFRESH_CLAIM) && claimsJws.getBody().get(REFRESH_CLAIM).equals(Boolean.TRUE),
                 id,
-                (String)rawApp, email);
+                (String)rawApp,
+                (String)rawEmail);
     }
 
     /**
