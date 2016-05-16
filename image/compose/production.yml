@@ -11,6 +11,7 @@ services:
       - LOCAL_FILE_DIR=/data/izou
       - DATABASE_USER=${MYSQLUSER}
       - DATABASE_PW=${MYSQLUSERPASS}
+      - EMAIL_DISABLED=false
     volumes:
       - /etc/letsencrypt:/ssl:ro
       - ${DATA}:/data/izou

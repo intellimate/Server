@@ -5,6 +5,7 @@ services:
     environment:
       DOMAIN: http://${DOCKERIP}:4567/
       LOCAL_FILE_DIR: /data/izou
+      EMAIL_DISABLED: true
 
   db_izou:
     image: mysql:latest

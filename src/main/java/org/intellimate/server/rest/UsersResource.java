@@ -1,20 +1,28 @@
 package org.intellimate.server.rest;
 
+import com.sendgrid.SendGridException;
 import org.apache.commons.validator.routines.EmailValidator;
-import org.intellimate.server.BadRequestException;
-import org.intellimate.server.NotFoundException;
-import org.intellimate.server.UnauthorizedException;
+import org.intellimate.server.*;
 import org.intellimate.server.database.model.tables.records.UserRecord;
+import org.intellimate.server.database.operations.AppOperations;
 import org.intellimate.server.database.operations.IzouInstanceOperations;
 import org.intellimate.server.database.operations.UserOperations;
 import org.intellimate.server.jwt.JWTHelper;
 import org.intellimate.server.jwt.JWTokenPassed;
 import org.intellimate.server.jwt.Subject;
+import org.intellimate.server.mail.MailHandler;
+import org.intellimate.server.proto.App;
+import org.intellimate.server.proto.AppList;
 import org.intellimate.server.proto.IzouInstance;
 import org.intellimate.server.proto.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static javafx.scene.input.KeyCode.M;
 
 /**
  * handles all the users requests
@@ -24,12 +32,18 @@ import java.util.Objects;
 public class UsersResource {
     private final UserOperations userOperations;
     private final IzouInstanceOperations izouInstanceOperations;
+    private final AppOperations appOperations;
     private final JWTHelper jwtHelper;
+    private final MailHandler mailHandler;
+    private final String salt = BCrypt.gensalt();
+    private static Logger logger = LoggerFactory.getLogger(UsersResource.class);
 
-    public UsersResource(UserOperations userOperations, IzouInstanceOperations izouInstanceOperations, JWTHelper jwtHelper) {
+    public UsersResource(UserOperations userOperations, IzouInstanceOperations izouInstanceOperations, AppOperations appOperations, JWTHelper jwtHelper, MailHandler mailHandler) {
         this.userOperations = userOperations;
         this.izouInstanceOperations = izouInstanceOperations;
+        this.appOperations = appOperations;
         this.jwtHelper = jwtHelper;
+        this.mailHandler = mailHandler;
     }
 
     /**
@@ -52,13 +66,136 @@ public class UsersResource {
         if (!EmailValidator.getInstance(false).isValid(email)) {
             throw new BadRequestException("invalid email: " + email);
         }
-        String hashpw = BCrypt.hashpw(password, BCrypt.gensalt());
-        UserRecord userRecord = new UserRecord(null, email, hashpw, username, false);
+        String hashpw = BCrypt.hashpw(password, salt);
+        UserRecord userRecord = new UserRecord(null, email, hashpw, username, false, false);
         int id = userOperations.insertUser(userRecord);
+        try {
+            mailHandler.sendUserConfirmation(id, username, email);
+        } catch (SendGridException e) {
+            logger.info("unable to send email", e);
+            throw new InternalServerErrorException("unable to send confirmation email", e);
+        }
         return User.newBuilder()
                 .setEmail(email)
                 .setId(id)
                 .setUsername(username)
+                .build();
+    }
+
+    /**
+     * resends the Confirmation-email
+     * @param email the email address of the suspected user
+     */
+    public void resendConfirmationEmail(String email) {
+        UserRecord account = userOperations.getUser(email)
+                .orElseThrow(() -> new NotFoundException("User is not existing"));
+        Boolean confirmed = account
+                .getConfirmed();
+        if (confirmed) {
+            throw new BadRequestException("Account is already confirmed");
+        }
+        try {
+            mailHandler.sendUserConfirmation(account.getIdUser(), account.getName(), account.getEmail());
+        } catch (SendGridException e) {
+            logger.info("unable to send email", e);
+            throw new InternalServerErrorException("unable to send confirmation email", e);
+        }
+    }
+
+    /***
+     * sends an email to reset the password
+     * @param email the email address
+     */
+    public void sendPasswordResetEmail(String email) {
+        UserRecord account = userOperations.getUser(email)
+                .orElseThrow(() -> new NotFoundException("User is not existing"));
+        Boolean confirmed = account
+                .getConfirmed();
+        if (!confirmed) {
+            throw new BadRequestException("Account is not activated yet");
+        }
+        try {
+            mailHandler.sendUserPasswordReset(account.getIdUser(), account.getName(), account.getEmail());
+        } catch (SendGridException e) {
+            logger.info("unable to send email", e);
+            throw new InternalServerErrorException("unable to send reset email", e);
+        }
+    }
+
+    /**
+     * confirms the account
+     * @param token the JWToken with the Type CONFUSER
+     */
+    public void confirmUser(JWTokenPassed token) {
+        if (!Subject.CONFUSER.equals(token.getSubject())) {
+            throw new BadRequestException("wrong token");
+        }
+        String email = token.getEmail().orElseThrow(() -> new InternalServerErrorException("illegal token generated"));
+        UserRecord account = userOperations.getUser(email)
+                .orElseThrow(() -> new NotFoundException("User is not existing"));
+        if (email.equals(account.getEmail())) {
+            throw new BadRequestException("email changed, now active: "+account.getEmail());
+        }
+        UserRecord userRecord = new UserRecord();
+        userRecord.setConfirmed(true);
+        userOperations.updateUser(token.getId(), userRecord);
+    }
+
+    /**
+     * resets the password of for the account
+     * @param token the token passed
+     * @param password the password to change to
+     */
+    public void resetPassword(JWTokenPassed token, String password) {
+        if (!Subject.RESETUSER.equals(token.getSubject())) {
+            throw new BadRequestException("wrong token");
+        }
+        if (password.length() < 4) {
+            throw new BadRequestException("invalid password length, must be at least 4");
+        }
+        String hashpw = BCrypt.hashpw(password, salt);
+        UserRecord userRecord = new UserRecord();
+        userRecord.setPassword(hashpw);
+        userOperations.updateUser(token.getId(), userRecord);
+    }
+
+    /**
+     * patches the user-record
+     * @param user the new data
+     * @param id the id of the user
+     * @return the updated User
+     */
+    public User patchUser(User user, int id) {
+        UserRecord existing = userOperations.getUser(id)
+                .orElseThrow(() -> new NotFoundException("User is not existing"));
+
+        boolean changedMail = false;
+        if (!user.getUsername().equals(existing.getName())) {
+            existing.setName(user.getUsername());
+        }
+        if (!user.getEmail().equals(existing.getEmail())) {
+            existing.setEmail(user.getEmail());
+            existing.setConfirmed(false);
+            changedMail = true;
+        }
+        boolean changedPassword = BCrypt.checkpw(user.getPassword(), existing.getPassword());
+        if (changedPassword) {
+            String hashpw = BCrypt.hashpw(user.getPassword(), salt);
+            existing.setPassword(hashpw);
+        }
+        UserRecord changed = userOperations.updateUser(id, existing);
+        if (changedMail) {
+            try {
+                mailHandler.sendUserConfirmation(id, user.getUsername(), user.getEmail());
+            } catch (SendGridException e) {
+                logger.info("unable to send email", e);
+                throw new InternalServerErrorException("unable to send confirmation email", e);
+            }
+        }
+        return User.newBuilder()
+                .setUsername(changed.getName())
+                .setId(id)
+                .setEmail(changed.getEmail())
                 .build();
     }
 
@@ -108,6 +245,27 @@ public class UsersResource {
                 .setId(id)
                 .setName(name)
                 .setToken(jwtHelper.generateIzouRefreshJWT(id))
+                .build();
+    }
+
+    /**
+     * returns all the apps where the user is the developer responsible
+     * @param user the user
+     * @return a list of apps
+     */
+    public AppList getUsersApps(int user) {
+        return AppList.newBuilder()
+                .addAllApps(
+                        appOperations.getUsersApps(user).stream()
+                                .map(record -> App.newBuilder()
+                                        .setId(record.getIdApp())
+                                        .setName(record.getName())
+                                        .setActive(record.getActive())
+                                        .setDescription(record.getDescription())
+                                        .build()
+                                )
+                                .collect(Collectors.toList())
+                )
                 .build();
     }
 
