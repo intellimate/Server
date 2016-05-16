@@ -5,6 +5,7 @@ import org.jooq.DSLContext;
 
 import java.util.Optional;
 
+import static javafx.scene.input.KeyCode.M;
 import static org.intellimate.server.database.model.Tables.*;
 
 /**
@@ -37,6 +38,19 @@ public class UserOperations extends AbstractOperations {
         return create.selectFrom(USER)
                 .where(USER.ID_USER.eq(userID))
                 .fetchOptional();
+    }
+
+    /**
+     * updates the UserRecord
+     * @param id the ID of the record
+     * @param userRecord the userRecord to update
+     */
+    public UserRecord updateUser(int id, UserRecord userRecord) {
+        return create.update(USER)
+                .set(userRecord)
+                .where(USER.ID_USER.eq(id))
+                .returning()
+                .fetchOne();
     }
 
     /**

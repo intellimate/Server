@@ -378,4 +378,10 @@ public class AppOperations extends AbstractOperations {
                 .where(APP.ID_APP.equals(app))
                 .execute();
     }
+
+    public List<AppRecord> getUsersApps(int user) {
+        return create.selectFrom(APP)
+                .where(APP.DEVELOPER.eq(user))
+                .fetch();
+    }
 }
