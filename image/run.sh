@@ -3,13 +3,13 @@ echo The options are: $@
 echo "SSL: $SSL"
 fileExists=$( -f keystore.jks )
 echo "file: $fileExists"
-if [[ -z "$SSL" ]]; then
+if [[ "$SSL" = true ]]; then
     echo ssl returned true
 fi
 if [[ ! -f keystore.jks ]]; then
     echo file does not exist
 fi
-if [[ -z "$SSL" ]]; then
+if [[ "$SSL" = true ]]; then
     echo ssl returned true
     if [[ ! -f keystore.jks ]]; then
         echo file does not exist
