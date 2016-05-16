@@ -1,7 +1,7 @@
 #!/bin/bash
 echo The options are: $@
 echo "SSL: $SSL"
-fileExists=$(-f keystore.jks)
+fileExists=$( -f keystore.jks)
 echo "file: $fileExists"
 #if [[ -z "$SSL" && ! -f keystore.jks ]]; then
 #    echo generating keystore
