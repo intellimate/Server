@@ -12,8 +12,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 
-import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
-
 /**
  * this class creates and reads the JWT (Json Web Token)
  * @author LeanderK
@@ -24,6 +22,7 @@ public class JWTHelper {
     private static final String REFRESH_CLAIM = "refreshIzou";
     private static final String ID_CLAIM = "sid";
     private static final String APP = "app";
+    private static final String EMAIL = "email";
     private final String secret;
     private final Duration accessTokenExpiration = Duration.ofDays(1);
 
@@ -104,6 +103,42 @@ public class JWTHelper {
     }
 
     /**
+     * generates the confirmationToken the user has to pass to the system to verify his email.
+     * @param user the userID
+     * @param expireDuration the duration after which the token expires
+     * @param email the email to confirm
+     * @return the JWT String
+     */
+    public String generateConfirmationToken(int user, String email, Duration expireDuration) {
+        logger.debug("encoding Confirmation JWT for user", user);
+        Instant expiration = Instant.now().plus(expireDuration);
+        return Jwts.builder()
+                .setSubject(Subject.CONFUSER.name())
+                .claim(ID_CLAIM, String.valueOf(user))
+                .claim(EMAIL, email)
+                .setExpiration(Date.from(expiration))
+                .signWith(SignatureAlgorithm.HS256, secret)
+                .compact();
+    }
+
+    /**
+     * generates the Reset-Token the user has to pass to the system to reset his password.
+     * @param user the userID
+     * @param expireDuration the duration after which the token expires
+     * @return the JWT String
+     */
+    public String generateResetToken(int user, Duration expireDuration) {
+        logger.debug("encoding Confirmation JWT for user", user);
+        Instant expiration = Instant.now().plus(expireDuration);
+        return Jwts.builder()
+                .setSubject(Subject.RESETUSER.name())
+                .claim(ID_CLAIM, String.valueOf(user))
+                .setExpiration(Date.from(expiration))
+                .signWith(SignatureAlgorithm.HS256, secret)
+                .compact();
+    }
+
+    /**
      * parses the JWT and create the {@link JWTokenPassed}
      * @param token the jwt
      * @return the suitable JWT
@@ -124,7 +159,7 @@ public class JWTHelper {
         return new JWTokenPassed(Subject.valueOf(claimsJws.getBody().getSubject()),
                 claimsJws.getBody().containsKey(REFRESH_CLAIM) && claimsJws.getBody().get(REFRESH_CLAIM).equals(Boolean.TRUE),
                 id,
-                (String)rawApp);
+                (String)rawApp, email);
     }
 
     /**
