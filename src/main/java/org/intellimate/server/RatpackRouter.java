@@ -134,6 +134,10 @@ public class RatpackRouter implements RequestHelper {
                                     .get("users/:id/confirm/:token", ctx -> {
                                         usersResource.confirmUser(jwtHelper.parseToken(assertParameter(ctx, "token")));
                                     })
+                                    //temporary until website
+                                    .get("users/:id/reset-password/reset/:token/:pass", ctx -> {
+                                        usersResource.resetPassword(jwtHelper.parseToken(assertParameter(ctx, "token")), assertParameter(ctx, "pass"));
+                                    })
                                     .get("users/:id/apps", assureUser(ctx -> ctx.render(
                                             usersResource.getUsersApps(ctx.get(JWTokenPassed.class).getId())
                                     )))
