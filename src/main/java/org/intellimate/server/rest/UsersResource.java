@@ -133,7 +133,7 @@ public class UsersResource {
         UserRecord account = userOperations.getUser(email)
                 .orElseThrow(() -> new NotFoundException("User is not existing"));
         if (email.equals(account.getEmail())) {
-            throw new BadRequestException("email changed, now active: "+account.getEmail());
+            throw new BadRequestException("email changed, now active: "+account.getEmail()+", requested"+email);
         }
         UserRecord userRecord = new UserRecord();
         userRecord.setConfirmed(true);
