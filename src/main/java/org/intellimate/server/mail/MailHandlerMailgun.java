@@ -17,7 +17,7 @@ public class MailHandlerMailgun extends MailHandler {
         super(deliveryEmailAddress, jwtHelper, disabled);
         if (!disabled) {
             this.configuration = new Configuration()
-                    .domain("mg.izou.info")
+                    .domain("izou.info")
                     .apiKey(apikey)
                     .from("Izou", deliveryEmailAddress);
         } else {
