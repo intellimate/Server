@@ -12,6 +12,8 @@ services:
       - DATABASE_USER=${MYSQLUSER}
       - DATABASE_PW=${MYSQLUSERPASS}
       - EMAIL_DISABLED=false
+      - MAILGUN=${MAILGUN}
+      - DELIVERY_EMAIL=support@izou.info
     volumes:
       - /etc/letsencrypt:/ssl:ro
       - ${DATA}:/data/izou
