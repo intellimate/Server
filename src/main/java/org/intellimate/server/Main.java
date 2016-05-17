@@ -11,6 +11,8 @@ import org.intellimate.server.database.operations.UserOperations;
 import org.intellimate.server.izou.Communication;
 import org.intellimate.server.jwt.JWTHelper;
 import org.intellimate.server.mail.MailHandler;
+import org.intellimate.server.mail.MailHandlerMailgun;
+import org.intellimate.server.mail.MailHandlerSendGrid;
 import org.intellimate.server.rest.AppResource;
 import org.intellimate.server.rest.Authentication;
 import org.intellimate.server.rest.IzouResource;
@@ -135,9 +137,9 @@ public class Main {
         JWTHelper jwtHelper = new JWTHelper(requireProperty("JWT"));
 
         boolean emailDisabled = "true".equals(getProperty("EMAIL_DISABLED"));
-        String sendgridKey = requireProperty("SENDGRID", emailDisabled);
-        String delivery_email = requireProperty("DELIVERY_EMAIL", emailDisabled);
-        MailHandler mailHandler = new MailHandler(jwtHelper, emailDisabled, sendgridKey, delivery_email);
+        String mailgunKey = requireProperty("MAILGUN", emailDisabled);
+        String deliveryEmail = requireProperty("DELIVERY_EMAIL", emailDisabled);
+        MailHandler mailHandler = new MailHandlerMailgun(deliveryEmail, jwtHelper, emailDisabled, mailgunKey);
 
         AppResource appResource = new AppResource(appOperations, fileStorage, userOperations);
         Authentication authentication = new Authentication(izouInstanceOperations, userOperations, jwtHelper);
