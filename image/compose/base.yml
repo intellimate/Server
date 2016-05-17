@@ -3,9 +3,9 @@ services:
   server:
     image: intellimate/server:latest
     environment:
-      DOMAIN: http://${DOCKERIP}:4567/
-      LOCAL_FILE_DIR: /data/izou
-      EMAIL_DISABLED: true
+      - DOMAIN=http://${DOCKERIP}:4567/
+      - LOCAL_FILE_DIR=/data/izou
+      - EMAIL_DISABLED=true
 
   db_izou:
     image: mysql:latest
