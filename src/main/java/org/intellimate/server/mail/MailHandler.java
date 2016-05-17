@@ -30,12 +30,12 @@ public abstract class MailHandler {
             String jwt = jwtHelper.generateConfirmationToken(user, emailAddress, duration);
 
             String subject = "Please confirm your account on izou.info";
-            String body = String.format("Hello, %s\n", name) +
-                    "You're on your way!\n" +
-                    "Let's confirm your email address.\n" +
-                    "\n" +
-                    "no website yet :(\n" +
-                    String.format("<a href=\"https://api.izou.info/users/%d/confirm/%s\">click here to confirm</a>\n", user, jwt) +
+            String body = String.format("Hello, %s<br/>", name) +
+                    "You're on your way!<br/>" +
+                    "Let's confirm your email address.<br/>" +
+                    "<br/>" +
+                    "no website yet :(<br/>" +
+                    String.format("<a href=\"https://api.izou.info/users/%d/confirm/%s\">click here to confirm</a><br/>", user, jwt) +
                     String.format("this link is valid for %d hours", duration.toHours());
 
             sendMail(emailAddress, subject, body);
@@ -52,13 +52,13 @@ public abstract class MailHandler {
             String jwt = jwtHelper.generateResetToken(user, duration);
 
             String subject = "Password Reset";
-            String body = String.format("Hello, %s\n", name) +
-                    "To reset your password please visit:\n" +
-                    "\n" +
-                    "no website yet :(\n" +
-                    String.format("your reset token is : %s\n", jwt)+
+            String body = String.format("Hello, %s<br/>", name) +
+                    "To reset your password please visit:<br/>" +
+                    "<br/>" +
+                    "no website yet :(<br/>" +
+                    String.format("your reset token is : %s<br/>", jwt)+
                     "you can reset your password by adding your new password to the link " +
-                    String.format("https://api.izou.info/users/%d/reset-password/reset/%s/<NEW PASSWORD HERE>", user, jwt)+
+                    String.format("https://api.izou.info/users/%d/reset-password/reset/%s/&lt;NEW PASSWORD HERE&gt; <br/>", user, jwt)+
                     String.format("this link is valid for %d hours", duration.toHours());
 
             sendMail(emailAddress, subject, body);
