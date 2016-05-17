@@ -132,7 +132,7 @@ public class UsersResource {
         String email = token.getEmail().orElseThrow(() -> new InternalServerErrorException("illegal token generated"));
         UserRecord account = userOperations.getUser(email)
                 .orElseThrow(() -> new NotFoundException("User is not existing"));
-        if (email.equals(account.getEmail())) {
+        if (!email.equals(account.getEmail())) {
             throw new BadRequestException("email changed, now active: "+account.getEmail()+", requested"+email);
         }
         UserRecord userRecord = new UserRecord();
