@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -71,7 +72,7 @@ public class UsersResource {
         int id = userOperations.insertUser(userRecord);
         try {
             mailHandler.sendUserConfirmation(id, username, email);
-        } catch (SendGridException e) {
+        } catch (IOException e) {
             logger.info("unable to send email", e);
             throw new InternalServerErrorException("unable to send confirmation email", e);
         }
@@ -96,7 +97,7 @@ public class UsersResource {
         }
         try {
             mailHandler.sendUserConfirmation(account.getIdUser(), account.getName(), account.getEmail());
-        } catch (SendGridException e) {
+        } catch (IOException e) {
             logger.info("unable to send email", e);
             throw new InternalServerErrorException("unable to send confirmation email", e);
         }
@@ -116,7 +117,7 @@ public class UsersResource {
         }
         try {
             mailHandler.sendUserPasswordReset(account.getIdUser(), account.getName(), account.getEmail());
-        } catch (SendGridException e) {
+        } catch (IOException e) {
             logger.info("unable to send email", e);
             throw new InternalServerErrorException("unable to send reset email", e);
         }
@@ -187,7 +188,7 @@ public class UsersResource {
         if (changedMail) {
             try {
                 mailHandler.sendUserConfirmation(id, user.getUsername(), user.getEmail());
-            } catch (SendGridException e) {
+            } catch (IOException e) {
                 logger.info("unable to send email", e);
                 throw new InternalServerErrorException("unable to send confirmation email", e);
             }
