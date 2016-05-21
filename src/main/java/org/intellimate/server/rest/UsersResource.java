@@ -85,7 +85,7 @@ public class UsersResource {
      * resends the Confirmation-email
      * @param email the email address of the suspected user
      */
-    public void resendConfirmationEmail(String email) {
+    public String resendConfirmationEmail(String email) {
         UserRecord account = userOperations.getUser(email)
                 .orElseThrow(() -> new NotFoundException("User is not existing"));
         Boolean confirmed = account
@@ -99,13 +99,14 @@ public class UsersResource {
             logger.info("unable to send email", e);
             throw new InternalServerErrorException("unable to send confirmation email", e);
         }
+        return "Ok";
     }
 
     /***
      * sends an email to reset the password
      * @param email the email address
      */
-    public void sendPasswordResetEmail(String email) {
+    public String sendPasswordResetEmail(String email) {
         UserRecord account = userOperations.getUser(email)
                 .orElseThrow(() -> new NotFoundException("User is not existing"));
         Boolean confirmed = account
@@ -119,13 +120,14 @@ public class UsersResource {
             logger.info("unable to send email", e);
             throw new InternalServerErrorException("unable to send reset email", e);
         }
+        return "Ok";
     }
 
     /**
      * confirms the account
      * @param token the JWToken with the Type CONFUSER
      */
-    public void confirmUser(JWTokenPassed token) {
+    public String confirmUser(JWTokenPassed token) {
         if (!Subject.CONFUSER.equals(token.getSubject())) {
             throw new BadRequestException("wrong token");
         }
@@ -138,6 +140,7 @@ public class UsersResource {
         UserRecord userRecord = new UserRecord();
         userRecord.setConfirmed(true);
         userOperations.updateUser(token.getId(), userRecord);
+        return "Ok";
     }
 
     /**
@@ -145,7 +148,7 @@ public class UsersResource {
      * @param token the token passed
      * @param password the password to change to
      */
-    public void resetPassword(JWTokenPassed token, String password) {
+    public String resetPassword(JWTokenPassed token, String password) {
         if (!Subject.RESETUSER.equals(token.getSubject())) {
             throw new BadRequestException("wrong token");
         }
@@ -156,6 +159,7 @@ public class UsersResource {
         UserRecord userRecord = new UserRecord();
         userRecord.setPassword(hashpw);
         userOperations.updateUser(token.getId(), userRecord);
+        return "Ok";
     }
 
     /**
@@ -224,12 +228,13 @@ public class UsersResource {
      * @param id the user to remove
      * @param jwTokenPassed the jwt passed
      */
-    public void removeUser(int id, JWTokenPassed jwTokenPassed) {
+    public String removeUser(int id, JWTokenPassed jwTokenPassed) {
         assertCorrectRequest(id, jwTokenPassed);
         boolean existed = userOperations.deleteUser(id);
         if (!existed) {
             throw new NotFoundException(String.format("user %d already deleted", id));
         }
+        return "Ok";
     }
 
     /**
@@ -273,12 +278,13 @@ public class UsersResource {
      * @param user the user associated
      * @param instanceId the instance id
      */
-    public void removeIzouInstance(int user, int instanceId, JWTokenPassed jwTokenPassed) {
+    public String removeIzouInstance(int user, int instanceId, JWTokenPassed jwTokenPassed) {
         assertCorrectRequest(user, jwTokenPassed);
         boolean existed = izouInstanceOperations.removeIzouInstance(user, instanceId);
         if (!existed) {
             throw new NotFoundException(String.format("instance was not existing for user %d", user));
         }
+        return "Ok";
     }
 
     /**
@@ -286,12 +292,13 @@ public class UsersResource {
      * @param id the requested user id
      * @param jwTokenPassed the jwt token
      */
-    public void assertCorrectRequest(int id, JWTokenPassed jwTokenPassed) {
+    public String assertCorrectRequest(int id, JWTokenPassed jwTokenPassed) {
         if (jwTokenPassed.getSubject() != Subject.USER) {
             throw new BadRequestException("method only allowed for users");
         }
         if (id != jwTokenPassed.getId()) {
             throw new UnauthorizedException("not allowed to delete other user");
         }
+        return "Ok";
     }
 }

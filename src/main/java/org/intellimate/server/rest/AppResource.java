@@ -1,5 +1,6 @@
 package org.intellimate.server.rest;
 
+import io.netty.buffer.ByteBuf;
 import org.intellimate.server.BadRequestException;
 import org.intellimate.server.NotFoundException;
 import org.intellimate.server.data.FileStorage;
@@ -12,10 +13,14 @@ import org.intellimate.server.database.operations.AppOperations;
 import org.intellimate.server.database.operations.UserOperations;
 import org.intellimate.server.proto.App;
 import org.intellimate.server.proto.AppList;
+import org.jooq.lambda.Blocking;
 import org.jooq.lambda.tuple.Tuple2;
+import ratpack.exec.Promise;
+import ratpack.stream.TransformablePublisher;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -128,7 +133,7 @@ public class AppResource {
         return result.v1;
     }
 
-    public String putInstance(int userID, int app, int major, int minor, int patch, String platform, InputStream stream) {
+    public Promise<String> putInstance(int userID, int app, int major, int minor, int patch, String platform, TransformablePublisher<? extends ByteBuf> input) {
         UserRecord user = userOperations.getUser(userID)
                 .orElseThrow(() -> new BadRequestException(String.format("invalid user %d", userID)));
         Integer developer = appOperations.getApp(app)
@@ -140,12 +145,16 @@ public class AppResource {
         AppInstanceRecord appInstanceRecord = appOperations.getAppInstance(app, major, minor, patch, platform)
                 .orElseThrow(() -> new BadRequestException("instance is not existing"));
         String name = String.format("appinstance%d", appInstanceRecord.getIdAppInstance());
-        fileStorage.save(stream, name);
-        appOperations.setActive(app, appInstanceRecord.getIdAppInstance());
-        return fileStorage.getLink(name);
+        CompletableFuture<Long> future = fileStorage.save(input, name);
+
+        return Promise.of(down -> down.accept(future))
+                .map(ignore -> {
+                    appOperations.setActive(app, appInstanceRecord.getIdAppInstance());
+                    return fileStorage.getLink(name);
+                });
     }
 
-    public String putPicture(int userID, int app, InputStream stream) {
+    public Promise<String> putPicture(int userID, int app, TransformablePublisher<? extends ByteBuf> input) {
         UserRecord user = userOperations.getUser(userID)
                 .orElseThrow(() -> new BadRequestException(String.format("invalid user %d", userID)));
         Integer developer = appOperations.getApp(app)
@@ -155,7 +164,8 @@ public class AppResource {
             throw new BadRequestException(String.format("user %d is not developer for app %d", userID, app));
         }
         String name = "picture" + app + ".jpg";
-        fileStorage.saveExact(stream, name);
-        return fileStorage.getLink(name);
+        CompletableFuture<Long> future = fileStorage.saveExact(input, name);
+        return Promise.of(down -> down.accept(future))
+                .map(ignore -> fileStorage.getLink(name));
     }
 }
