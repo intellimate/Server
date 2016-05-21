@@ -1,6 +1,9 @@
 package org.intellimate.server.data;
 
-import java.io.InputStream;
+import io.netty.buffer.ByteBuf;
+import ratpack.stream.TransformablePublisher;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * the Google cloud storage backend for FileStorage
@@ -9,13 +12,13 @@ import java.io.InputStream;
  */
 public class GCS implements FileStorage {
     @Override
-    public void save(InputStream inputStream, String name) {
-
+    public CompletableFuture<Long> save(TransformablePublisher<? extends ByteBuf> input, String name) {
+        return null;
     }
 
     @Override
-    public void saveExact(InputStream inputStream, String name) {
-
+    public CompletableFuture<Long> saveExact(TransformablePublisher<? extends ByteBuf> input, String name) {
+        return null;
     }
 
     @Override

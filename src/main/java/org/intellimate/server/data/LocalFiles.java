@@ -1,10 +1,18 @@
 package org.intellimate.server.data;
 
-import com.google.common.io.ByteStreams;
+import io.netty.buffer.ByteBuf;
 import org.intellimate.server.BadRequestException;
 import org.intellimate.server.InternalServerErrorException;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+import ratpack.exec.Promise;
+import ratpack.exec.Upstream;
+import ratpack.stream.TransformablePublisher;
 
 import java.io.*;
+import java.nio.channels.AsynchronousFileChannel;
+import java.nio.file.StandardOpenOption;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Saves the files on the localFile-System
@@ -24,12 +32,12 @@ public class LocalFiles implements FileStorage {
     }
 
     @Override
-    public synchronized void save(InputStream inputStream, String name) {
-        saveExact(inputStream, name+".izou");
+    public CompletableFuture<Long> save(TransformablePublisher<? extends ByteBuf> input, String name) {
+        return saveExact(input, name+".izou");
     }
 
     @Override
-    public void saveExact(InputStream inputStream, String name) {
+    public CompletableFuture<Long> saveExact(TransformablePublisher<? extends ByteBuf> input, String name) {
         File file = new File(baseDir, name);
         if (!file.exists()) {
             try {
@@ -38,11 +46,66 @@ public class LocalFiles implements FileStorage {
                 throw new InternalServerErrorException(String.format("unable to create file %s", name), e);
             }
         }
-        try(FileOutputStream fileInput = new FileOutputStream(file)) {
-            ByteStreams.copy(inputStream, fileInput);
-        } catch (IOException e) {
-            throw new InternalServerErrorException(String.format("unable to save %s", name), e);
-        }
+
+        CompletableFuture<Long> future = new CompletableFuture<>();
+
+        input.subscribe(new Subscriber<ByteBuf>() {
+            private Subscription subscription;
+            private AsynchronousFileChannel out;
+            long written;
+
+            @Override
+            public void onSubscribe(Subscription s) {
+                subscription = s;
+                try {
+                    this.out = AsynchronousFileChannel.open(
+                            file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING
+                    );
+                    subscription.request(1);
+                } catch (IOException e) {
+                    subscription.cancel();
+                    future.completeExceptionally(e);
+                }
+            }
+
+            @Override
+            public void onNext(ByteBuf byteBuf) {
+                Promise.of((Upstream<Integer>)  down ->
+                        out.write(byteBuf.nioBuffer(), written, null, down.completionHandler())
+                ).onError(error -> {
+                    byteBuf.release();
+                    subscription.cancel();
+                    out.close();
+                    future.completeExceptionally(error);
+                }).then(bytesWritten -> {
+                    byteBuf.release();
+                    written += bytesWritten;
+                    subscription.request(1);
+                });
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                future.completeExceptionally(t);
+                try {
+                    out.close();
+                } catch (IOException ignore) {
+                    // ignore
+                }
+            }
+
+            @Override
+            public void onComplete() {
+                try {
+                    out.close();
+                } catch (IOException ignore) {
+                    // ignore
+                }
+                future.complete(written);
+            }
+        });
+
+        return future;
     }
 
     @Override
