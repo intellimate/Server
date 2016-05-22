@@ -4,6 +4,9 @@ import org.intellimate.server.database.model.tables.records.IzouInstanceRecord;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
+import java.util.List;
+import java.util.Optional;
+
 import static org.intellimate.server.database.model.Tables.*;
 
 /**
@@ -72,5 +75,29 @@ public class IzouInstanceOperations extends AbstractOperations {
                 .where(IZOU_INSTANCE.ID_INSTANCES.eq(izouInstance))
                 .and(IZOU_INSTANCE.USER.eq(user))
                 .execute() == 1;
+    }
+
+    /**
+     * returns all the instances for the user
+     * @param user the user
+     * @return a list of the instances
+     */
+    public List<IzouInstanceRecord> getAllInstancesForUser(int user) {
+        return create.selectFrom(IZOU_INSTANCE)
+                .where(IZOU_INSTANCE.USER.eq(user))
+                .fetch();
+    }
+
+    /**
+     * returns a matching izou-instance or empty
+     * @param user the user to check for
+     * @param izouId the izou-id
+     * @return the record or null
+     */
+    public Optional<IzouInstanceRecord> getInstance(int user, int izouId) {
+        return create.selectFrom(IZOU_INSTANCE)
+                .where(IZOU_INSTANCE.USER.eq(user))
+                .and(IZOU_INSTANCE.ID_INSTANCES.eq(izouId))
+                .fetchOptional();
     }
 }
