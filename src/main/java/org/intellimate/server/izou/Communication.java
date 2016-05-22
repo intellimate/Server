@@ -87,16 +87,22 @@ public class Communication implements RequestHelper {
         params.add(HttpRequest.Param.newBuilder().setKey("izou").addValue(String.valueOf(izouId)).build());
         jwt.getApp().ifPresent(id -> params.add(HttpRequest.Param.newBuilder().setKey("app").addValue(id).build()));
         context.getRequest().getBody()
-                .map(data -> HttpRequest.newBuilder()
-                        .setUrl(path)
-                        .setContentType(context.getRequest().getContentType().getType())
-                        .setMethod(context.getRequest().getMethod().getName())
-                        .setBodySize((int) context.getRequest().getContentLength())
-                        .addAllParams(
-                                params
-                        )
-                        .build()
-                )
+                .map(data -> {
+                    HttpRequest.Builder builder = HttpRequest.newBuilder()
+                            .setUrl(path);
+                    String contentType = context.getRequest().getContentType().getType();
+                    if (contentType != null) {
+                        builder.setContentType(contentType);
+                    }
+
+                    return builder
+                            .setMethod(context.getRequest().getMethod().getName())
+                            .setBodySize((int) context.getRequest().getContentLength())
+                            .addAllParams(
+                                    params
+                            )
+                            .build();
+                })
                 .flatMap(httpRequest -> {
                     TransformablePublisher<? extends ByteBuf> bodyStream = null;
                     if (httpRequest.getBodySize() != -1) {

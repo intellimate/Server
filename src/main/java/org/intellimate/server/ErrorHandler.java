@@ -66,7 +66,11 @@ public class ErrorHandler implements ServerErrorHandler {
      *
      * @return Encoded message
      */
-    private ErrorResponse error( String code, String detail) {
-        return ErrorResponse.newBuilder().setCode(code).setDetail(detail).build();
+    private ErrorResponse error(String code, String detail) {
+        String finalDetail = detail;
+        if (finalDetail == null) {
+            finalDetail = "null";
+        }
+        return ErrorResponse.newBuilder().setCode(code).setDetail(finalDetail).build();
     }
 }
