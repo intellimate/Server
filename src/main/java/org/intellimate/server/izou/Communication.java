@@ -74,9 +74,6 @@ public class Communication implements RequestHelper {
                 throw new UnauthorizedException("not authorized for izou instance "+izouId);
             }
         }
-        if (!jwt.getApp().isPresent()) {
-            throw new UnauthorizedException("app indentifier missing");
-        }
         String path = uri.replace(String.format("users/%d/izou/%d", userID, izouId), "");
         List<HttpRequest.Param> params = context.getRequest().getQueryParams().getAll().entrySet().stream()
                 .filter(entry -> !(entry.getKey().equals("user") || entry.getKey().equals("izou") || entry.getKey().equals("app")))
