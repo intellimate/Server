@@ -32,7 +32,8 @@ public class IzouInstanceOperations extends AbstractOperations {
     public boolean validateIzouInstanceID(int id) {
         return create.fetchExists(
                 DSL.select(IZOU_INSTANCE.ID_INSTANCES)
-                    .where(IZOU_INSTANCE.ID_INSTANCES.eq(id))
+                        .from(IZOU_INSTANCE)
+                        .where(IZOU_INSTANCE.ID_INSTANCES.eq(id))
         );
     }
 
@@ -45,6 +46,7 @@ public class IzouInstanceOperations extends AbstractOperations {
     public boolean validateIzouInstanceID(int izouID, int userID) {
         return create.fetchExists(
                 DSL.select(IZOU_INSTANCE.ID_INSTANCES)
+                        .from(IZOU_INSTANCE)
                         .where(IZOU_INSTANCE.ID_INSTANCES.eq(izouID))
                         .and(IZOU_INSTANCE.USER.eq(userID))
         );
