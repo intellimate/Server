@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -300,5 +301,34 @@ public class UsersResource {
             throw new UnauthorizedException("not allowed to delete other user");
         }
         return "Ok";
+    }
+
+    /**
+     * returns an Izou-Instance
+     * @param userId the user
+     * @return the izou-instance
+     */
+    public List<IzouInstance> getIzouInstances(int userId) {
+        return izouInstanceOperations.getAllInstancesForUser(userId).stream()
+                .map(record -> IzouInstance.newBuilder().setName(record.getName()).setId(record.getIdInstances()).build())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * returns an Izou-Instance
+     * @param userId the user
+     * @param izouid the izou-id
+     * @return the izou-instance
+     */
+    public IzouInstance getIzouInstance(int userId, int izouid) {
+        return izouInstanceOperations.getInstance(userId, izouid)
+                .map(record ->
+                        IzouInstance.newBuilder()
+                                .setId(record.getIdInstances())
+                                .setName(record.getName())
+                                .setToken(jwtHelper.generateIzouRefreshJWT(record.getIdInstances()))
+                                .build()
+                )
+                .orElseThrow(() -> new NotFoundException(String.format("No Izou-instance found for user %d and izou-id %d", userId, izouid)));
     }
 }

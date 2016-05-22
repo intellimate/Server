@@ -139,6 +139,12 @@ public class RatpackRouter implements RequestHelper {
                                     .get("users/:id/apps", assureUser(ctx -> ctx.render(
                                             usersResource.getUsersApps(ctx.get(JWTokenPassed.class).getId())
                                     )))
+                                    .get("users/:id/izou", assureUser(ctx -> ctx.render(
+                                            usersResource.getIzouInstances(ctx.get(JWTokenPassed.class).getId())
+                                    )))
+                                    .get("users/:id/izou/:izouid", assureUser(ctx -> ctx.render(
+                                            usersResource.getIzouInstance(ctx.get(JWTokenPassed.class).getId(), assertParameterInt(ctx, "izouid"))
+                                    )))
                                     .patch("users/:id", assureUser(ctx -> ctx.render(
                                             merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
                                                     .map(message -> usersResource.patchUser(message.build(), ctx.get(JWTokenPassed.class).getId()))
@@ -173,7 +179,7 @@ public class RatpackRouter implements RequestHelper {
                                     .delete("users/:id/izou/:izouid", assureUser(ctx -> ctx.render(
                                             usersResource.removeIzouInstance(assertParameterInt(ctx, "id"), assertParameterInt(ctx, "izouid"), ctx.get(JWTokenPassed.class)))
                                     ))
-                                    .prefix("users/:id/izou/:izouId/:command", chain2 -> chain2.all(communication::handleRequest))
+                                    .prefix("users/:id/izou/:izouId/instance/:command", chain2 -> chain2.all(communication::handleRequest))
                                     //izou
                                     .get("izou", ctx -> ctx.render(izouResource.getCurrentVersion()))
                                     .put("izou/:major/:minor/:patch", assureUser(ctx -> ctx.render(
