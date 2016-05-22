@@ -1,6 +1,6 @@
 package org.intellimate.server.izou;
-import com.google.common.io.ByteStreams;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.intellimate.server.InternalServerErrorException;
 import org.intellimate.server.NotFoundException;
 import org.intellimate.server.RequestHelper;
@@ -19,20 +19,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ratpack.exec.Blocking;
 import ratpack.exec.Promise;
+import ratpack.func.Action;
 import ratpack.handling.Context;
-import ratpack.stream.Streams;
+import ratpack.http.ResponseChunks;
 import ratpack.stream.TransformablePublisher;
+import ratpack.stream.internal.BufferingPublisher;
 
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocketFactory;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Condition;
@@ -108,23 +107,7 @@ public class Communication implements RequestHelper {
                     }
                     return communicate(httpRequest, bodyStream, izouId);
                 })
-                .map(httpResponse -> {
-                    context.getResponse().status(httpResponse.getStatus());
-                    httpResponse.getHeadersList()
-                            .forEach(header -> context.getResponse().getHeaders().set(header.getKey(), header.getValueList()));
-                    if (!httpResponse.getContentType().equals("")) {
-                        context.getResponse().contentType(httpResponse.getContentType());
-                    }
-                    context.getResponse().sendStream(new Publisher<ByteBuf>() {
-                        @Override
-                        public void subscribe(Subscriber<? super ByteBuf> s) {
-
-                        }
-                    });
-
-                    return httpResponse.getBody().toByteArray();
-                })
-                .then(bytes -> context.getResponse().send(bytes));
+                .then(response -> sendResponse(response, context));
     }
 
     public void startServer() throws IOException {
@@ -148,6 +131,82 @@ public class Communication implements RequestHelper {
                     return;
             }
         });
+    }
+
+    private void sendResponse(Response response, Context context) {
+        context.getResponse().status(response.response.getStatus());
+        response.response.getHeadersList()
+                .forEach(header -> context.getResponse().getHeaders().set(header.getKey(), header.getValueList()));
+        if (!response.response.getContentType().equals("")) {
+            context.getResponse().contentType(response.response.getContentType());
+        }
+
+        long bodySize = response.response.getBodySize();
+        context.getResponse().getHeaders().set("Content-Length", bodySize);
+        int bufferSize = 8192;
+        context.getResponse().sendStream(new BufferingPublisher<>(ByteBuf::release, write -> {
+            return new Subscription() {
+                boolean cancelled;
+                long bytesRead = 0;
+
+                @Override
+                public void request(long n) {
+                    emit();
+                }
+
+                private void emit() {
+                    Blocking.get(this::read)
+                            .onError(write::error)
+                            .then(b -> {
+                                if (!cancelled) {
+                                    if (b == null) {
+                                        if (bytesRead == bodySize) {
+                                            response.responseFinished.complete(bytesRead);
+                                            write.complete();
+                                        } else {
+                                            EOFException exception = new EOFException("Body size does not match advertised-size");
+                                            response.responseFinished.completeExceptionally(exception);
+                                            write.error(exception);
+                                        }
+                                    } else {
+                                        write.item(b);
+                                        if (write.getRequested() > 0) {
+                                            emit();
+                                        }
+                                    }
+                                }
+                            });
+                }
+
+                private ByteBuf read() throws IOException {
+                    int toRead = (int) Math.min(bufferSize, bodySize - bytesRead);
+                    byte[] buffer = new byte[toRead];
+                    int read = response.stream.read(buffer);
+                    if (read == -1) {
+                        return null;
+                    } else {
+                        bytesRead += read;
+                        return Unpooled.wrappedBuffer(buffer, 0, read);
+                    }
+                }
+
+                @Override
+                public void cancel() {
+                    cancelled = true;
+                    Blocking.op(() -> {
+                                while (bytesRead != bodySize) {
+                                    read();
+                                }
+                            })
+                            .onError(this::communicateError)
+                            .then();
+                }
+
+                private void communicateError(Throwable throwable) {
+                    response.responseFinished.completeExceptionally(throwable);
+                }
+            };
+        }));
     }
 
     private void handleSocket(Socket socket) {
@@ -192,7 +251,7 @@ public class Communication implements RequestHelper {
 
     }
 
-    private Promise<HttpResponse> communicate(HttpRequest httpRequest, TransformablePublisher<? extends ByteBuf> bodyStream, int izou) {
+    private Promise<Response> communicate(HttpRequest httpRequest, TransformablePublisher<? extends ByteBuf> bodyStream, int izou) {
         BlockingDeque<Command> queue = izouConnections.get(izou);
         if (queue == null) {
             throw new NotFoundException("1: No connection to Izou");
@@ -279,7 +338,9 @@ public class Communication implements RequestHelper {
                         if (response == null) {
                             loop = false;
                         }
-                        command.response.complete(response);
+                        Response responseFinal = new Response(response, in);
+                        command.response.complete(responseFinal);
+                        responseFinal.responseFinished.join();
                     } catch (InterruptedException e) {
                         if (!socket.isConnected()) {
                             loop = false;
@@ -307,12 +368,24 @@ public class Communication implements RequestHelper {
     private static class Command {
         final HttpRequest request;
         final TransformablePublisher<? extends ByteBuf> bodyStream;
-        final CompletableFuture<HttpResponse> response;
+        final CompletableFuture<Response> response;
 
         Command(HttpRequest request, TransformablePublisher<? extends ByteBuf> bodyStream) {
             this.request = request;
             this.bodyStream = bodyStream;
             response = new CompletableFuture<>();
+        }
+    }
+
+    private static class Response {
+        final HttpResponse response;
+        final InputStream stream;
+        final CompletableFuture<Long> responseFinished;
+
+        private Response(HttpResponse response, InputStream stream) {
+            this.response = response;
+            this.stream = stream;
+            responseFinished = new CompletableFuture<>();
         }
     }
 }
