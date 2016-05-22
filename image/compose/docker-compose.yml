@@ -8,6 +8,8 @@ services:
       - /data/izou
     links:
        - db_izou:dbizou
+    environment:
+      - DUMMY_DATA=true
     ports:
        - "4567:4567"
        - "4000:4000"

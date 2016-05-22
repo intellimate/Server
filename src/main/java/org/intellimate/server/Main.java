@@ -4,6 +4,7 @@ import org.intellimate.server.data.FileStorage;
 import org.intellimate.server.data.GCS;
 import org.intellimate.server.data.LocalFiles;
 import org.intellimate.server.database.DatabaseManager;
+import org.intellimate.server.database.DummyData;
 import org.intellimate.server.database.operations.AppOperations;
 import org.intellimate.server.database.operations.IzouInstanceOperations;
 import org.intellimate.server.database.operations.IzouOperations;
@@ -115,6 +116,10 @@ public class Main {
         IzouInstanceOperations izouInstanceOperations = new IzouInstanceOperations(databaseManager.getContext());
         IzouOperations izouOperations = new IzouOperations(databaseManager.getContext());
         UserOperations userOperations = new UserOperations(databaseManager.getContext());
+
+        if ("true".equals(getProperty("DUMMY_DATA"))) {
+            new DummyData().init(userOperations, izouInstanceOperations);
+        }
 
         String domain = requireProperty("DOMAIN");
 
