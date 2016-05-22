@@ -375,7 +375,7 @@ public class AppOperations extends AbstractOperations {
 
         create.update(APP)
                 .set(APP.ACTIVE, true)
-                .where(APP.ID_APP.equals(app))
+                .where(APP.ID_APP.eq(app))
                 .execute();
     }
 
