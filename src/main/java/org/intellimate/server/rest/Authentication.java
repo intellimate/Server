@@ -77,8 +77,8 @@ public class Authentication {
      * @return if valid an access jwt-token
      */
     public String refreshIzou(JWTokenPassed token) {
-        if (!token.getSubject().equals(Subject.USER)) {
-            throw new UnauthorizedException("Client needs to be an user");
+        if (!token.getSubject().equals(Subject.IZOU)) {
+            throw new UnauthorizedException("Client needs to be Izou");
         } else if (!token.isRefresh()) {
             throw new UnauthorizedException("Token must be refresh token");
         }
