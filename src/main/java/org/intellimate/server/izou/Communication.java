@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
  * @author LeanderK
  * @version 1.0
  */
+//TODO timeout
 public class Communication implements RequestHelper {
     private final ConcurrentMap<Integer, BlockingDeque<Command>> izouConnections = new ConcurrentHashMap<>();
     private static Logger logger = LoggerFactory.getLogger(Communication.class);
@@ -137,86 +138,93 @@ public class Communication implements RequestHelper {
     }
 
     private void sendResponse(Response response, Context context) {
-        context.getResponse().status(response.response.getStatus());
-        response.response.getHeadersList()
-                .forEach(header -> context.getResponse().getHeaders().set(header.getKey(), header.getValueList()));
-        if (!response.response.getContentType().equals("")) {
-            context.getResponse().contentType(response.response.getContentType());
-        }
+        try {
+            context.getResponse().status(response.response.getStatus());
+            response.response.getHeadersList()
+                    .forEach(header -> context.getResponse().getHeaders().set(header.getKey(), header.getValueList()));
+            if (!response.response.getContentType().equals("")) {
+                context.getResponse().contentType(response.response.getContentType());
+            }
 
-        long bodySize = response.response.getBodySize();
-        context.getResponse().getHeaders().set("Content-Length", bodySize);
-        int bufferSize = 8192;
-        context.getResponse().sendStream(new BufferingPublisher<>(ByteBuf::release, write -> {
-            return new Subscription() {
-                boolean cancelled;
-                long bytesRead = 0;
+            long bodySize = response.response.getBodySize();
+            context.getResponse().getHeaders().set("Content-Length", bodySize);
+            int bufferSize = 8192;
+            context.getResponse().sendStream(new BufferingPublisher<>(ByteBuf::release, write -> {
+                return new Subscription() {
+                    boolean cancelled;
+                    long bytesRead = 0;
 
-                @Override
-                public void request(long n) {
-                    emit();
-                }
+                    @Override
+                    public void request(long n) {
+                        emit();
+                    }
 
-                private void emit() {
-                    Blocking.get(this::read)
-                            .onError(write::error)
-                            .then(b -> {
-                                if (!cancelled) {
-                                    if (b == null) {
-                                        if (bytesRead == bodySize) {
-                                            response.responseFinished.complete(bytesRead);
-                                            write.complete();
+                    private void emit() {
+                        Blocking.get(this::read)
+                                .onError(write::error)
+                                .then(b -> {
+                                    if (!cancelled) {
+                                        if (b == null) {
+                                            if (bytesRead == bodySize) {
+                                                response.responseFinished.complete(bytesRead);
+                                                write.complete();
+                                            } else {
+                                                EOFException exception = new EOFException("Body size does not match advertised-size");
+                                                response.responseFinished.completeExceptionally(exception);
+                                                write.error(exception);
+                                            }
                                         } else {
-                                            EOFException exception = new EOFException("Body size does not match advertised-size");
-                                            response.responseFinished.completeExceptionally(exception);
-                                            write.error(exception);
-                                        }
-                                    } else {
-                                        write.item(b);
-                                        if (write.getRequested() > 0) {
-                                            emit();
+                                            write.item(b);
+                                            if (write.getRequested() > 0) {
+                                                emit();
+                                            }
                                         }
                                     }
-                                }
-                            });
-                }
-
-                private ByteBuf read() throws IOException {
-                    int toRead = (int) Math.min(bufferSize, bodySize - bytesRead);
-                    byte[] buffer = new byte[toRead];
-                    int read = response.stream.read(buffer);
-                    if (read == -1) {
-                        return null;
-                    } else {
-                        bytesRead += read;
-                        return Unpooled.wrappedBuffer(buffer, 0, read);
+                                });
                     }
-                }
 
-                @Override
-                public void cancel() {
-                    cancelled = true;
-                    Blocking.op(() -> {
-                                while (bytesRead != bodySize) {
-                                    read();
-                                }
-                            })
-                            .onError(this::communicateError)
-                            .then();
-                }
+                    private ByteBuf read() throws IOException {
+                        int toRead = (int) Math.min(bufferSize, bodySize - bytesRead);
+                        byte[] buffer = new byte[toRead];
+                        int read = response.stream.read(buffer);
+                        if (read == -1) {
+                            return null;
+                        } else {
+                            bytesRead += read;
+                            return Unpooled.wrappedBuffer(buffer, 0, read);
+                        }
+                    }
 
-                private void communicateError(Throwable throwable) {
-                    response.responseFinished.completeExceptionally(throwable);
-                }
-            };
-        }));
+                    @Override
+                    public void cancel() {
+                        cancelled = true;
+                        Blocking.op(() -> {
+                                    while (bytesRead != bodySize) {
+                                        read();
+                                    }
+                                })
+                                .onError(this::communicateError)
+                                .then();
+                    }
+
+                    private void communicateError(Throwable throwable) {
+                        response.responseFinished.completeExceptionally(throwable);
+                    }
+                };
+            }));
+        } finally {
+            if (!response.responseFinished.isDone()) {
+                response.responseFinished.completeExceptionally(new InternalServerErrorException("an unkown error occured"));
+            }
+        }
     }
 
     private void handleSocket(Socket socket) {
         int izouId = -1;
         Future<?> submit = null;
         try {
-            InputStream inputStream = null;inputStream = socket.getInputStream();
+            InputStream inputStream = null;
+            inputStream = socket.getInputStream();
             SocketConnection socketConnection = SocketConnection.parseDelimitedFrom(inputStream);
             JWTokenPassed jwTokenPassed = jwtHelper.parseToken(socketConnection.getToken());
             if (!jwTokenPassed.getSubject().equals(Subject.IZOU)) {
@@ -275,8 +283,10 @@ public class Communication implements RequestHelper {
                 OutputStream out = socket.getOutputStream();
                 boolean loop = true;
                 while (run && loop) {
+                    Command currentCommand = null;
                     try {
-                        Command command = input.poll(30, TimeUnit.SECONDS);
+                        currentCommand = input.poll(30, TimeUnit.SECONDS);
+                        Command command = currentCommand;
                         if (command == null) {
                             if (!socket.isConnected()) {
                                 loop = false;
@@ -347,6 +357,10 @@ public class Communication implements RequestHelper {
                     } catch (InterruptedException e) {
                         if (!socket.isConnected()) {
                             loop = false;
+                        }
+                    } finally {
+                        if (currentCommand != null && !currentCommand.response.isDone()) {
+                            currentCommand.response.completeExceptionally(new InternalServerErrorException("5: an unknown error occured"));
                         }
                     }
                 }
