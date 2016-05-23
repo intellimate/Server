@@ -16,7 +16,7 @@ public class DummyData {
         if (!userOperations.getUser(1).isPresent()) {
             String salt = BCrypt.gensalt();
             String hashpw = BCrypt.hashpw("izou", salt);
-            UserRecord userRecord = new UserRecord(1, "intellimate@weg.org", hashpw, "intellimate", true, true);
+            UserRecord userRecord = new UserRecord(1, "intellimate@izou.info", hashpw, "intellimate", true, true);
             userOperations.insertUser(userRecord);
         }
         if (!izouInstanceOperations.getInstance(1, 1).isPresent()) {
