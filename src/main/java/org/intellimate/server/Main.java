@@ -126,7 +126,7 @@ public class Main {
         FileStorage fileStorage;
         String fileDir;
         String gcs = getProperty("GCS");
-        if (gcs != null) {
+        if (gcs != null && !gcs.isEmpty()) {
             fileStorage = new GCS();
             fileDir = null;
         } else {
@@ -209,7 +209,7 @@ public class Main {
      * @return the String
      */
     private String requireProperty(String key) {
-        return requireProperty(key, true);
+        return requireProperty(key, false);
     }
 
     /**

@@ -62,8 +62,8 @@ public class IzouResource {
             throw new UnauthorizedException(String.format("user %d is not root", userID));
         }
         IzouRecord izouRecord = izouOperations.insertIzou(major, minor, patch, false);
-        String name = String.format("izou%d", izouRecord.getIdIzou());
-        CompletableFuture<Long> future = fileStorage.save(request, name);
+        String name = String.format("izou%d.jar", izouRecord.getIdIzou());
+        CompletableFuture<Long> future = fileStorage.saveExact(request, name);
 
         return Promise.of(down -> down.accept(future))
                 .map(ignore -> {
@@ -71,7 +71,7 @@ public class IzouResource {
                     return Izou.newBuilder()
                             .setId(izouRecord.getIdIzou())
                             .setVersion(String.format("%d.%d.%d", major, minor, patch))
-                            .setDownloadLink(fileStorage.getLink(name))
+                            .setDownloadLink(fileStorage.getLinkForExactName(name))
                             .build();
                 });
     }

@@ -28,7 +28,7 @@ public class LocalFiles implements FileStorage {
         if (!baseDir.exists()) {
             baseDir.mkdir();
         }
-        this.baseFileDomain = baseDomain + "/files/";
+        this.baseFileDomain = baseDomain + "/data/";
     }
 
     @Override
@@ -70,7 +70,7 @@ public class LocalFiles implements FileStorage {
 
             @Override
             public void onNext(ByteBuf byteBuf) {
-                Promise.of((Upstream<Integer>)  down ->
+                Promise.async((Upstream<Integer>)  down ->
                         out.write(byteBuf.nioBuffer(), written, null, down.completionHandler())
                 ).onError(error -> {
                     byteBuf.release();

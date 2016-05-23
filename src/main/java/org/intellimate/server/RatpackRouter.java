@@ -26,6 +26,7 @@ import ratpack.registry.Registry;
 import ratpack.server.RatpackServer;
 import ratpack.server.ServerConfig;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -52,13 +53,14 @@ public class RatpackRouter implements RequestHelper {
 
     /**
      * creates a new Router.
-     * @param jwtHelper the jwt-helper to use
+     *
+     * @param jwtHelper      the jwt-helper to use
      * @param authentication
      * @param usersResource
      * @param izouResource
      * @param appResource
      * @param communication
-     * @param port the port the server is listening on
+     * @param port           the port the server is listening on
      * @param fileDir
      */
     public RatpackRouter(JWTHelper jwtHelper, Authentication authentication, UsersResource usersResource, IzouResource izouResource, AppResource appResource, Communication communication, int port, String fileDir) {
@@ -80,10 +82,10 @@ public class RatpackRouter implements RequestHelper {
                 .add(ServerErrorHandler.class, errorHandler)
                 .build();
         RatpackServer.start(server -> server
-                .serverConfig(ServerConfig.embedded().port(port))
+                .serverConfig(ServerConfig.embedded().port(port).baseDir(new File(fileDir).getAbsoluteFile().getCanonicalFile()))
                 .registry(registry)
                 .handlers(chain -> {
-                    Chain put = chain
+                            Chain put = chain
                                     .all(ctx -> {
                                         ctx.getResponse().getHeaders().add("access-control-allow-origin", "*");
                                         ctx.getResponse().getHeaders().add("access-control-allow-methods", "GET,PUT,POST,PATCH,DELETE,OPTIONS");
@@ -116,8 +118,8 @@ public class RatpackRouter implements RequestHelper {
                                             authentication.refreshIzou(ctx.get(JWTokenPassed.class))
                                     ))
                                     .post("authentication/users", ctx -> ctx.render(
-                                                merge(ctx, User.newBuilder(), Arrays.asList(User.ID_FIELD_NUMBER, User.USERNAME_FIELD_NUMBER))
-                                                        .map(message -> authentication.login(message.getEmail(), message.getPassword()))
+                                            merge(ctx, User.newBuilder(), Arrays.asList(User.ID_FIELD_NUMBER, User.USERNAME_FIELD_NUMBER))
+                                                    .map(message -> authentication.login(message.getEmail(), message.getPassword()))
                                     ))
                                     .post("authentication/apps/:izouId/:app", assureUser(ctx -> ctx.render(
                                             authentication.app(
@@ -125,46 +127,65 @@ public class RatpackRouter implements RequestHelper {
                                                     assertParameterInt(ctx, "izouId"),
                                                     assertParameter(ctx, "app"))
                                     )))
-                                    //user
-                                    .get("users/:id", assureUser(ctx -> ctx.render(
-                                            usersResource.getUser(ctx.get(JWTokenPassed.class).getId(), assertParameterInt(ctx, "id"))
-                                    )))
+                                    //users
+                                    .put("users", ctx -> ctx.render(
+                                            merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
+                                                    .map(message -> usersResource.addUser(message.getUsername(), message.getEmail(), message.getPassword()))
+                                    ))
+                                    .path("users/:id", assureUser(ctx -> ctx
+                                            .byMethod(m -> m
+                                                    .get(() -> ctx.render(
+                                                            usersResource.getUser(ctx.get(JWTokenPassed.class).getId(), assertParameterInt(ctx, "id"))
+                                                    ))
+                                                    .patch(() -> ctx.render(
+                                                            merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
+                                                                    .map(message -> usersResource.patchUser(message.build(), ctx.get(JWTokenPassed.class).getId()))
+                                                    ))
+                                                    .delete(() -> ctx.render(
+                                                            usersResource.removeUser(assertParameterInt(ctx, "id"), ctx.get(JWTokenPassed.class))
+                                                    ))
+                                            )
+                                    ))
+                                    .path("users/:id/izou", assureUser(ctx -> ctx
+                                            .byMethod(m -> m
+                                                    .get(() -> ctx.render(
+                                                            usersResource.getIzouInstances(ctx.get(JWTokenPassed.class).getId())
+                                                    ))
+                                                    .put(() -> ctx.render(
+                                                            merge(ctx, IzouInstance.newBuilder(), Arrays.asList(IzouInstance.ID_FIELD_NUMBER, IzouInstance.TOKEN_FIELD_NUMBER))
+                                                                    .map(message -> usersResource.addIzouInstance(assertParameterInt(ctx, "id"), message.getName(), ctx.get(JWTokenPassed.class)))
+                                                    ))
+
+                                            )
+                                    ))
+                                    .path("users/:id/izou/:izouid", assureUser(ctx -> ctx
+                                            .byMethod(m -> m
+                                                    .get(() -> ctx.render(
+                                                            usersResource.getIzouInstance(ctx.get(JWTokenPassed.class).getId(), assertParameterInt(ctx, "izouid"))
+                                                    ))
+                                                    .delete(() -> ctx.render(
+                                                            usersResource.removeIzouInstance(assertParameterInt(ctx, "id"), assertParameterInt(ctx, "izouid"), ctx.get(JWTokenPassed.class))
+                                                    ))
+                                            )
+                                    ))
                                     .get("users/:id/confirm/:token", ctx -> ctx.render(
-                                        usersResource.confirmUser(jwtHelper.parseToken(assertParameter(ctx, "token")))
+                                            usersResource.confirmUser(jwtHelper.parseToken(assertParameter(ctx, "token")))
                                     ))
                                     //temporary until website
                                     .get("users/:id/reset-password/reset/:token/:pass", ctx -> ctx.render(
-                                        usersResource.resetPassword(jwtHelper.parseToken(assertParameter(ctx, "token")), assertParameter(ctx, "pass"))
+                                            usersResource.resetPassword(jwtHelper.parseToken(assertParameter(ctx, "token")), assertParameter(ctx, "pass"))
                                     ))
                                     .get("users/:id/apps", assureUser(ctx -> ctx.render(
                                             usersResource.getUsersApps(ctx.get(JWTokenPassed.class).getId())
                                     )))
-                                    .get("users/:id/izou", assureUser(ctx -> ctx.render(
-                                            usersResource.getIzouInstances(ctx.get(JWTokenPassed.class).getId())
-                                    )))
-                                    .get("users/:id/izou/:izouid", assureUser(ctx -> ctx.render(
-                                            usersResource.getIzouInstance(ctx.get(JWTokenPassed.class).getId(), assertParameterInt(ctx, "izouid"))
-                                    )))
-                                    .patch("users/:id", assureUser(ctx -> ctx.render(
-                                            merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
-                                                    .map(message -> usersResource.patchUser(message.build(), ctx.get(JWTokenPassed.class).getId()))
-                                    )))
-                                    .put("users", ctx -> ctx.render(
-                                                merge(ctx, User.newBuilder(), Collections.singletonList(User.ID_FIELD_NUMBER))
-                                                        .map(message -> usersResource.addUser(message.getUsername(), message.getEmail(), message.getPassword()))
-                                    ))
                                     .put("users/:id/reset-password/reset/", ctx -> {
                                         JWTokenPassed token = ctx.maybeGet(JWTokenPassed.class)
                                                 .orElseThrow(() -> new UnauthorizedException("Request must be authenticated"));
                                         ctx.render(
                                                 merge(ctx, User.newBuilder(), Arrays.asList(User.ID_FIELD_NUMBER, User.USERNAME_FIELD_NUMBER, User.EMAIL_FIELD_NUMBER))
-                                                    .map(message -> usersResource.resetPassword(token, message.getPassword())))
+                                                        .map(message -> usersResource.resetPassword(token, message.getPassword())))
                                         ;
                                     })
-                                    .put("users/:id/izou", assureUser(ctx -> ctx.render(
-                                            merge(ctx, IzouInstance.newBuilder(), Arrays.asList(IzouInstance.ID_FIELD_NUMBER, IzouInstance.TOKEN_FIELD_NUMBER))
-                                                    .map(message -> usersResource.addIzouInstance(assertParameterInt(ctx, "id"), message.getName(), ctx.get(JWTokenPassed.class)))
-                                    )))
                                     .put("users/resend-confirmation", ctx -> ctx.render(
                                             merge(ctx, User.newBuilder(), Arrays.asList(User.ID_FIELD_NUMBER, User.USERNAME_FIELD_NUMBER, User.PASSWORD_FIELD_NUMBER))
                                                     .map(message -> usersResource.resendConfirmationEmail(message.getEmail()))
@@ -172,12 +193,6 @@ public class RatpackRouter implements RequestHelper {
                                     .put("users/reset-password/init", ctx -> ctx.render(
                                             merge(ctx, User.newBuilder(), Arrays.asList(User.ID_FIELD_NUMBER, User.USERNAME_FIELD_NUMBER, User.PASSWORD_FIELD_NUMBER))
                                                     .map(message -> usersResource.sendPasswordResetEmail(message.getEmail()))
-                                    ))
-                                    .delete("users/:id", assureUser(ctx -> ctx.render(
-                                            usersResource.removeUser(assertParameterInt(ctx, "id"), ctx.get(JWTokenPassed.class)))
-                                    ))
-                                    .delete("users/:id/izou/:izouid", assureUser(ctx -> ctx.render(
-                                            usersResource.removeIzouInstance(assertParameterInt(ctx, "id"), assertParameterInt(ctx, "izouid"), ctx.get(JWTokenPassed.class)))
                                     ))
                                     .prefix("users/:id/izou/:izouId/instance/:command", chain2 -> chain2.all(communication::handleRequest))
                                     //izou
@@ -192,16 +207,51 @@ public class RatpackRouter implements RequestHelper {
                                             ))
                                     )
                                     //apps
-                                    .get("apps", doPaginated(appResource::listApps))
+                                    .path("apps", ctx ->
+                                            ctx.byMethod(m -> m
+                                                    .get(() -> doPaginated(appResource::listApps).handle(ctx))
+                                                    .put(() -> assureUser(ctx1 -> ctx.render(
+                                                            merge(ctx, App.newBuilder(), Arrays.asList(
+                                                                    App.ID_FIELD_NUMBER,
+                                                                    App.ACTIVE_FIELD_NUMBER,
+                                                                    App.TAGS_FIELD_NUMBER,
+                                                                    App.DEVELOPER_FIELD_NUMBER,
+                                                                    App.TAGS_FIELD_NUMBER)
+                                                            ).map(app ->
+                                                                    appResource.createApp(
+                                                                            ctx.get(JWTokenPassed.class).getId(),
+                                                                            app.build()
+                                                                    )
+                                                            )
+                                                    )).handle(ctx)
+                                                    )
+                                            )
+                                    )
+                                    .path("apps/:id", ctx ->
+                                            ctx.byMethod(m -> m
+                                                    .get(() -> {
+                                                        int id = assertParameterInt(ctx, "id");
+                                                        List<String> platforms = ctx.getRequest().getQueryParams().asMultimap().get("platform");
+                                                        ctx.render(appResource.getApp(id, platforms));
+                                                    })
+                                                    .patch(() -> assureUser(ctx1 -> ctx.render(
+                                                            merge(ctx, App.newBuilder(), Arrays.asList(
+                                                                    App.ACTIVE_FIELD_NUMBER,
+                                                                    App.TAGS_FIELD_NUMBER,
+                                                                    App.DEVELOPER_FIELD_NUMBER,
+                                                                    App.AppVersion.DOWNLOAD_LINK_FIELD_NUMBER)
+                                                            ).map(app -> appResource.updateApp(
+                                                                            ctx.get(JWTokenPassed.class).getId(),
+                                                                            assertParameterInt(ctx, "id"),
+                                                                            app.build())
+                                                            )
+                                                    )).handle(ctx))
+                                            )
+                                    )
                                     .get("apps/search/:keyword", doPaginated((from, next, ctx) -> {
                                         String keyword = assertParameter(ctx, "keyword");
                                         return appResource.searchApps(from, next, keyword);
                                     }))
-                                    .get("apps/:id", ctx -> {
-                                        int id = assertParameterInt(ctx, "id");
-                                        List<String> platforms = ctx.getRequest().getQueryParams().asMultimap().get("platform");
-                                        ctx.render(appResource.getApp(id, platforms));
-                                    })
                                     .get("apps/:id/:major/:minor/:patch", ctx -> {
                                         List<String> platforms = ctx.getRequest().getQueryParams().asMultimap().get("platform");
                                         ctx.render(appResource.getAppVersion(
@@ -212,36 +262,6 @@ public class RatpackRouter implements RequestHelper {
                                                 platforms
                                         ));
                                     })
-                                    .patch("apps/:id", assureUser(ctx -> {
-                                        ctx.render(
-                                                merge(ctx, App.newBuilder(), Arrays.asList(
-                                                        App.ACTIVE_FIELD_NUMBER,
-                                                        App.TAGS_FIELD_NUMBER,
-                                                        App.DEVELOPER_FIELD_NUMBER)
-                                                )
-                                                        .map(app -> appResource.updateApp(
-                                                                ctx.get(JWTokenPassed.class).getId(),
-                                                                assertParameterInt(ctx, "id"),
-                                                                app.build())
-                                                        )
-
-                                        );
-                                    }))
-                                    .put("apps", assureUser(ctx -> {
-                                        ctx.render(
-                                                merge(ctx, App.newBuilder(), Arrays.asList(
-                                                        App.ID_FIELD_NUMBER,
-                                                        App.ACTIVE_FIELD_NUMBER,
-                                                        App.TAGS_FIELD_NUMBER,
-                                                        App.DEVELOPER_FIELD_NUMBER)
-                                                )
-                                                        .map(app -> appResource.createApp(
-                                                                ctx.get(JWTokenPassed.class).getId(),
-                                                                app.build())
-                                                        )
-
-                                        );
-                                    }))
                                     .put("apps/:id/:major/:minor/:patch/:platform", assureUser(ctx -> {
                                         ctx.render(
                                                 appResource.putInstance(
@@ -262,13 +282,10 @@ public class RatpackRouter implements RequestHelper {
                                                         ctx.getRequest().getBodyStream())
                                         );
                                     }));
-                    if (fileDir != null) {
-                        chain.files(fileHandlerSpec ->
-                                fileHandlerSpec.dir(fileDir)
-                                    .path("files")
-                        );
-                    }
-                }
+                            if (fileDir != null) {
+                                put.prefix("data", f -> f.files());
+                            }
+                        }
                 )
         );
     }
@@ -276,10 +293,10 @@ public class RatpackRouter implements RequestHelper {
     /**
      * merges the requests body with the Builder
      *
-     * @param context the Context of the Request with the JSON Representation of the Message as a Body
-     * @param t       the builder
+     * @param context  the Context of the Request with the JSON Representation of the Message as a Body
+     * @param t        the builder
      * @param excluded the field numbers of the optional fields
-     * @param <T>     the type of the builder
+     * @param <T>      the type of the builder
      * @return the builder with everything set
      * @throws BadRequestException if an error occurred while parsing the JSON or wrong content-type
      */
@@ -306,6 +323,7 @@ public class RatpackRouter implements RequestHelper {
 
     /**
      * executes the consumer if the client is authorized
+     *
      * @param contextConsumer the consumer to execute
      * @return a handler that executes the consumer if authorized
      */
@@ -319,6 +337,7 @@ public class RatpackRouter implements RequestHelper {
 
     /**
      * executes the consumer if the client is an izou instance
+     *
      * @param contextConsumer the consumer to execute
      * @return a handler that executes the consumer if client is an izou instance
      */
@@ -337,6 +356,7 @@ public class RatpackRouter implements RequestHelper {
 
     /**
      * executes the consumer if the client is an izou instance
+     *
      * @param contextConsumer the consumer to execute
      * @return a handler that executes the consumer if client is an izou instance
      */

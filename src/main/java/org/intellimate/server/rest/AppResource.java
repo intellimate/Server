@@ -1,5 +1,6 @@
 package org.intellimate.server.rest;
 
+import com.sun.tools.corba.se.idl.constExpr.Not;
 import io.netty.buffer.ByteBuf;
 import org.intellimate.server.BadRequestException;
 import org.intellimate.server.NotFoundException;
@@ -19,6 +20,7 @@ import ratpack.exec.Promise;
 import ratpack.stream.TransformablePublisher;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -50,13 +52,14 @@ public class AppResource {
                                                 versionRecord.getMajor(),
                                                 versionRecord.getMinor(),
                                                 versionRecord.getPatch()))
-                                        .setDownloadLink(String.format("appinstance%d",
-                                                record.getValue(Tables.APP_INSTANCE.ID_APP_INSTANCE)))
+                                        .setDownloadLink(fileStorage.getLinkForExactName(String.format("appinstance%d.zip",
+                                                record.getValue(Tables.APP_INSTANCE.ID_APP_INSTANCE))))
                                         .build();
                             })
                             .collect(Collectors.toList());
                     AppRecord app = data.v1;
                     List<String> tags = data.v2;
+                    tags.removeIf(tag -> tag == null);
                     return App.newBuilder()
                             .setId(app.getIdApp())
                             .setName(app.getName())
@@ -78,7 +81,7 @@ public class AppResource {
                 .map(appVersion -> {
                     return appVersion
                             .toBuilder()
-                            .setDownloadLink(fileStorage.getLink(String.format("appinstance%s", appVersion.getDownloadLink())))
+                            .setDownloadLink(fileStorage.getLinkForExactName(String.format("appinstance%s.zip", appVersion.getDownloadLink())))
                             .build();
                 })
                 .orElseThrow(() -> new NotFoundException(String.format("App-Version %d.%d.%d for app %d not found",
@@ -112,6 +115,11 @@ public class AppResource {
     public App updateApp(int userID, int appID, App app) {
         UserRecord user = userOperations.getUser(userID)
                 .orElseThrow(() -> new BadRequestException(String.format("invalid user %d", userID)));
+
+        AppRecord appRecord = appOperations.getApp(appID)
+                .orElseThrow(() -> new NotFoundException(String.format("App %d is not existing", appID)))
+                .v1;
+
         if (app.getDescription().isEmpty()) {
             throw new BadRequestException("description must not be empty");
         }
@@ -120,7 +128,11 @@ public class AppResource {
             throw new BadRequestException("name must not be empty");
         }
 
-        App toUpdate = app.toBuilder().setId(appID).build();
+        if (!appRecord.getDeveloper().equals(userID)) {
+            throw new BadRequestException("can not change the app of other developers");
+        }
+
+        App toUpdate = app.toBuilder().setId(appID).setActive(appRecord.getActive()).build();
 
         Tuple2<App, List<AppInstanceRecord>> result = appOperations.updateApp(userID, toUpdate);
 
@@ -144,13 +156,13 @@ public class AppResource {
         }
         AppInstanceRecord appInstanceRecord = appOperations.getAppInstance(app, major, minor, patch, platform)
                 .orElseThrow(() -> new BadRequestException("instance is not existing"));
-        String name = String.format("appinstance%d", appInstanceRecord.getIdAppInstance());
-        CompletableFuture<Long> future = fileStorage.save(input, name);
+        String name = String.format("appinstance%d.zip", appInstanceRecord.getIdAppInstance());
+        CompletableFuture<Long> future = fileStorage.saveExact(input, name);
 
-        return Promise.of(down -> down.accept(future))
+        return Promise.async(down -> down.accept(future))
                 .map(ignore -> {
                     appOperations.setActive(app, appInstanceRecord.getIdAppInstance());
-                    return fileStorage.getLink(name);
+                    return fileStorage.getLinkForExactName(name);
                 });
     }
 
@@ -166,6 +178,6 @@ public class AppResource {
         String name = "picture" + app + ".jpg";
         CompletableFuture<Long> future = fileStorage.saveExact(input, name);
         return Promise.of(down -> down.accept(future))
-                .map(ignore -> fileStorage.getLink(name));
+                .map(ignore -> fileStorage.getLinkForExactName(name));
     }
 }

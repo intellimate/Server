@@ -45,10 +45,13 @@ public class UserOperations extends AbstractOperations {
      * @param userRecord the userRecord to update
      */
     public UserRecord updateUser(int id, UserRecord userRecord) {
-        return create.update(USER)
+        create.update(USER)
                 .set(userRecord)
                 .where(USER.ID_USER.eq(id))
-                .returning()
+                .execute();
+
+        return create.selectFrom(USER)
+                .where(USER.ID_USER.eq(id))
                 .fetchOne();
     }
 

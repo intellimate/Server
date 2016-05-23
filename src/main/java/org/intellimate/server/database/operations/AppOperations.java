@@ -169,7 +169,7 @@ public class AppOperations extends AbstractOperations {
                 .select(app_tag_name)
                 .from(APP)
                 .leftJoin(APP_ACTIVE_TAG).onKey()
-                .join(APP_TAG).on(APP_ACTIVE_TAG.TAG.eq(APP_TAG.ID_APP_TAGS))
+                .leftJoin(APP_TAG).on(APP_ACTIVE_TAG.TAG.eq(APP_TAG.ID_APP_TAGS))
                 .where(APP.ID_APP.eq(appID))
                 .fetchGroups(record -> record.into(APP), record -> record.getValue(app_tag_name));
         if (appMap.isEmpty()) {
@@ -239,9 +239,12 @@ public class AppOperations extends AbstractOperations {
         Timestamp timestamp = Timestamp.from(Instant.now());
         List<App.AppVersion> versions = app.getVersionsList().stream()
                 .map(appVersion -> {
-                    String[] split = appVersion.getVersion().split(".");
+                    String[] split = appVersion.getVersion().split("\\.");
                     if (split.length == 3) {
                         List<Integer> version = Arrays.stream(split).map(Integer::parseInt).collect(Collectors.toList());
+                        if (version.stream().anyMatch(number -> number > 999)) {
+                            throw new BadRequestException("Illegal Version, max is 999.999.999");
+                        }
                         AppVersionRecord appVersionRecord = new AppVersionRecord(null,
                                 insertedApp.getIdApp(), timestamp, version.get(0), version.get(1), version.get(2));
                         AppVersionRecord insertedVersion = create.insertInto(APP_VERSION)
@@ -276,14 +279,20 @@ public class AppOperations extends AbstractOperations {
 
     //TODO: same version mutiple times, version max 3 char long
     public Tuple2<App, List<AppInstanceRecord>> updateApp(int user, App app) {
-        AppRecord appRecord = new AppRecord(app.getId(), user, app.getName(), app.getDescription(), null);
-        AppRecord updated = create.update(APP)
+        AppRecord appRecord = new AppRecord();
+        appRecord.setIdApp(app.getId());
+        appRecord.setName(app.getName());
+        appRecord.setDescription(app.getDescription());
+        int affected = create.update(APP)
                 .set(appRecord)
-                .returning()
-                .fetchOne();
-        if (updated == null) {
+                .where(APP.ID_APP.eq(app.getId()))
+                .execute();
+        if (affected != 1) {
             throw new BadRequestException(String.format("unable to update app %d", app.getId()));
         }
+        AppRecord updated = create.selectFrom(APP)
+                .where(APP.ID_APP.eq(app.getId()))
+                .fetchOne();
         Timestamp timestamp = Timestamp.from(Instant.now());
         Tuple2<Result<AppInstanceRecord>, List<App.AppVersion>> result = create.transactionResult(conf -> {
             Map<String, AppVersionRecord> existingVersion = create.selectFrom(APP_VERSION)
@@ -299,7 +308,7 @@ public class AppOperations extends AbstractOperations {
                     .collect(Collectors.toList());
 
             List<App.AppVersion> toInsert = app.getVersionsList().stream()
-                    .filter(appVersion -> existingVersion.containsKey(appVersion.getVersion()))
+                    .filter(appVersion -> !existingVersion.containsKey(appVersion.getVersion()))
                     .collect(Collectors.toList());
 
             Result<AppInstanceRecord> toDeleteFromData = DSL.using(conf).selectFrom(APP_INSTANCE)
@@ -315,9 +324,12 @@ public class AppOperations extends AbstractOperations {
         List<App.AppVersion> toInsert = result.v2;
         List<App.AppVersion> versions = toInsert.stream()
                 .map(appVersion -> {
-                    String[] split = appVersion.getVersion().split(".");
+                    String[] split = appVersion.getVersion().split("\\.");
                     if (split.length == 3) {
                         List<Integer> version = Arrays.stream(split).map(Integer::parseInt).collect(Collectors.toList());
+                        if (version.stream().anyMatch(number -> number > 999)) {
+                            throw new BadRequestException("Illegal Version, max is 999.999.999");
+                        }
                         AppVersionRecord appVersionRecord = new AppVersionRecord(null,
                                 updated.getIdApp(), timestamp, version.get(0), version.get(1), version.get(2));
                         AppVersionRecord insertedVersion = create.insertInto(APP_VERSION)

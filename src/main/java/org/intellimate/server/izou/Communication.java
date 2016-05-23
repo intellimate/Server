@@ -95,12 +95,7 @@ public class Communication implements RequestHelper {
                         params
                 )
                 .build();
-
-        TransformablePublisher<? extends ByteBuf> bodyStream = null;
-        if (httpRequest.getBodySize() != -1) {
-            bodyStream = context.getRequest().getBodyStream();
-        }
-        communicate(httpRequest, bodyStream, izouId, context);
+        communicate(httpRequest, izouId, context);
     }
 
     public void startServer() throws IOException {
@@ -177,7 +172,7 @@ public class Communication implements RequestHelper {
 
     }
 
-    private void communicate(HttpRequest httpRequest, TransformablePublisher<? extends ByteBuf> bodyStream, int izou, Context context) {
+    private void communicate(HttpRequest httpRequest, int izou, Context context) {
         IzouConnection izouConnection = izouConnections.get(izou);
         if (izouConnection == null) {
             throw new NotFoundException("No connection to Izou");
@@ -198,13 +193,12 @@ public class Communication implements RequestHelper {
                     if (izouConnection.socket.isClosed()) {
                         throw new InternalServerErrorException("1. Izou Connection closed while waiting for availability");
                     }
-                    Thread.sleep(2000);
                     InputStream in = izouConnection.socket.getInputStream();
                     OutputStream out = izouConnection.socket.getOutputStream();
                     // Write the response to the wire
                     httpRequest.writeDelimitedTo(out);
                     if (httpRequest.getBodySize() != -1) {
-                        Long written = writeBody(out, bodyStream).join();
+                        Long written = writeBody(out, context, httpRequest.getBodySize()).join();
                         if (httpRequest.getBodySize() != written) {
                             throw new IzouCommunicationException("Actual Body length does not match content-lenght header");
                         }
@@ -226,10 +220,10 @@ public class Communication implements RequestHelper {
         }
     }
 
-    private CompletableFuture<Long> writeBody(final OutputStream out, TransformablePublisher<? extends ByteBuf> bodyStream) {
+    private CompletableFuture<Long> writeBody(final OutputStream out, Context context, long size) {
         CompletableFuture<Long> result = new CompletableFuture<>();
         WritableByteChannel channel = Channels.newChannel(out);
-        bodyStream.subscribe(new Subscriber<ByteBuf>() {
+        context.getRequest().getBodyStream(size).subscribe(new Subscriber<ByteBuf>() {
             private Subscription subscription;
             long written = 0;
             @Override

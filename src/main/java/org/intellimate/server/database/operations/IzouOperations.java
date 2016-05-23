@@ -22,10 +22,12 @@ public class IzouOperations extends AbstractOperations {
     }
 
     public IzouRecord updateIzou(int id, boolean active) {
-        return create.update(IZOU)
+        create.update(IZOU)
                 .set(IZOU.ACTIVE, active)
                 .where(IZOU.ID_IZOU.eq(id))
-                .returning()
+                .execute();
+        return create.selectFrom(IZOU)
+                .where(IZOU.ID_IZOU.eq(id))
                 .fetchOne();
     }
 
