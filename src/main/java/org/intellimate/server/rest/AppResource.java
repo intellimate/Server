@@ -1,6 +1,5 @@
 package org.intellimate.server.rest;
 
-import com.sun.tools.corba.se.idl.constExpr.Not;
 import io.netty.buffer.ByteBuf;
 import org.intellimate.server.BadRequestException;
 import org.intellimate.server.NotFoundException;
@@ -14,13 +13,10 @@ import org.intellimate.server.database.operations.AppOperations;
 import org.intellimate.server.database.operations.UserOperations;
 import org.intellimate.server.proto.App;
 import org.intellimate.server.proto.AppList;
-import org.jooq.lambda.Blocking;
 import org.jooq.lambda.tuple.Tuple2;
 import ratpack.exec.Promise;
 import ratpack.stream.TransformablePublisher;
 
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -52,6 +48,7 @@ public class AppResource {
                                                 versionRecord.getMajor(),
                                                 versionRecord.getMinor(),
                                                 versionRecord.getPatch()))
+                                        .setPlatform(record.get(Tables.APP_INSTANCE.PLATFORM))
                                         .setDownloadLink(fileStorage.getLinkForExactName(String.format("appinstance%d.zip",
                                                 record.getValue(Tables.APP_INSTANCE.ID_APP_INSTANCE))))
                                         .build();

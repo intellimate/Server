@@ -1,9 +1,6 @@
 package org.intellimate.server.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import org.intellimate.server.UnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +21,7 @@ public class JWTHelper {
     private static final String APP = "app";
     private static final String EMAIL = "email";
     private final String secret;
-    private final Duration accessTokenExpiration = Duration.ofDays(1);
+    private final Duration accessTokenExpiration = Duration.ofDays(2);
 
     /**
      * creates the JWT-Helper
@@ -144,7 +141,12 @@ public class JWTHelper {
      * @return the suitable JWT
      */
     public JWTokenPassed parseToken(String token) {
-        Jws<Claims> claimsJws = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+        Jws<Claims> claimsJws = null;
+        try {
+            claimsJws = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+        } catch (ExpiredJwtException e) {
+            throw new UnauthorizedException(e.getMessage(), e);
+        }
         Object rawId = claimsJws.getBody().get(ID_CLAIM);
         if (rawId == null) {
             throw new UnauthorizedException("Illegal JWT, no id");

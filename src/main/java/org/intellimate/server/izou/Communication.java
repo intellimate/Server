@@ -156,7 +156,7 @@ public class Communication implements RequestHelper {
                     logger.error("an error occured while trying to close socket", ex);
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("an error occured while trying to close socket", e);
             if (izouId != -1) {
                 izouConnections.remove(izouId);

@@ -22,6 +22,7 @@ import static org.intellimate.server.database.model.Tables.*;
  * @author LeanderK
  * @version 1.0
  */
+//TODO dependencies
 public class AppOperations extends AbstractOperations {
     private final String JAVA_PLATFORM = "java";
 
@@ -149,6 +150,7 @@ public class AppOperations extends AbstractOperations {
         queryPlatforms.add(JAVA_PLATFORM);
         return create.select(APP_VERSION.fields())
                 .select(APP_INSTANCE.ID_APP_INSTANCE)
+                .select(APP_INSTANCE.PLATFORM)
                 .from(APP_VERSION)
                 .innerJoin(APP_INSTANCE).on(
                         APP_VERSION.ID_APP_VERSION.eq(APP_INSTANCE.APP_REFERENCE)
@@ -251,8 +253,12 @@ public class AppOperations extends AbstractOperations {
                                 .set(appVersionRecord)
                                 .returning()
                                 .fetchOne();
+                        String platform = appVersion.getPlatform();
+                        if (platform == null || platform.isEmpty()) {
+                            platform = "java";
+                        }
                         AppInstanceRecord insertedInstance = create.insertInto(APP_INSTANCE)
-                                .set(new AppInstanceRecord(null, insertedVersion.getIdAppVersion(), appVersion.getPlatform(), false))
+                                .set(new AppInstanceRecord(null, insertedVersion.getIdAppVersion(), platform, false))
                                 .returning()
                                 .fetchOne();
                         List<AppDependencyRecord> dependencies = appVersion.getDependenciesList().stream()
@@ -336,8 +342,12 @@ public class AppOperations extends AbstractOperations {
                                 .set(appVersionRecord)
                                 .returning()
                                 .fetchOne();
+                        String platform = appVersion.getPlatform();
+                        if (platform == null || platform.isEmpty()) {
+                            platform = "java";
+                        }
                         AppInstanceRecord insertedInstance = create.insertInto(APP_INSTANCE)
-                                .set(new AppInstanceRecord(null, insertedVersion.getIdAppVersion(), appVersion.getPlatform(), false))
+                                .set(new AppInstanceRecord(null, insertedVersion.getIdAppVersion(), platform, false))
                                 .returning()
                                 .fetchOne();
                         List<AppDependencyRecord> dependencies = appVersion.getDependenciesList().stream()
