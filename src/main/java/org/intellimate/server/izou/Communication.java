@@ -28,8 +28,11 @@ import java.net.Socket;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -181,11 +184,10 @@ public class Communication implements RequestHelper {
             throw new NotFoundException("No connection to Izou");
         } else {
             Blocking.get(() -> {
+                BoundedLock.LockHolder lockHolder;
                 try {
-                    boolean notTimeout = izouConnection.lock.lock(10, TimeUnit.SECONDS);
-                    if (!notTimeout) {
-                        throw new InternalServerErrorException("1. Izou Connection is busy");
-                    }
+                    lockHolder = izouConnection.lock.lock(10, TimeUnit.SECONDS)
+                            .orElseThrow(() -> new InternalServerErrorException("1. Izou Connection is busy"));
                 } catch (IllegalStateException e) {
                     throw new BadRequestException("Maximum of parallel Requests for Izou-Instance reached");
                 }
@@ -198,7 +200,7 @@ public class Communication implements RequestHelper {
                     // Write the response to the wire
                     httpRequest.writeDelimitedTo(out);
                     if (httpRequest.getBodySize() != -1) {
-                        Long written = writeBody(out, context, httpRequest.getBodySize()).join();
+                        Long written = Blocking.on(Promise.async(down -> down.accept(writeBody(out, context, httpRequest.getBodySize()))));
                         if (httpRequest.getBodySize() != written) {
                             throw new IzouCommunicationException("Actual Body length does not match content-lenght header");
                         }
@@ -209,11 +211,12 @@ public class Communication implements RequestHelper {
                     if (response == null) {
                         throw new IzouCommunicationException("Unable to read response from izou");
                     }
-                    return new Response(response, izouConnection.socket, izouConnection.lock);
+                    return new Response(response, izouConnection.socket, lockHolder);
                 } catch (IzouCommunicationException e) {
                     izouConnection.socket.close();
-                    izouConnection.lock.unlock();
                     throw e;
+                } finally {
+                    lockHolder.unlock();
                 }
             }).then(response -> sendResponse(response.httpResponse, response.socket, context, response.lock));
 
@@ -223,12 +226,14 @@ public class Communication implements RequestHelper {
     private CompletableFuture<Long> writeBody(final OutputStream out, Context context, long size) {
         CompletableFuture<Long> result = new CompletableFuture<>();
         WritableByteChannel channel = Channels.newChannel(out);
+
         context.getRequest().getBodyStream(size).subscribe(new Subscriber<ByteBuf>() {
             private Subscription subscription;
             long written = 0;
             @Override
             public void onSubscribe(Subscription s) {
                 subscription = s;
+                subscription.request(1);
             }
 
             @Override
@@ -259,7 +264,7 @@ public class Communication implements RequestHelper {
         return result;
     }
 
-    private void sendResponse(HttpResponse response, Socket socket, Context context, BoundedLock lock) {
+    private void sendResponse(HttpResponse response, Socket socket, Context context, BoundedLock.LockHolder lock) {
         context.getResponse().status(response.getStatus());
         response.getHeadersList()
                 .forEach(header -> context.getResponse().getHeaders().set(header.getKey(), header.getValueList()));
@@ -345,7 +350,7 @@ public class Communication implements RequestHelper {
         }));
     }
 
-    private void serverError(Context context, Socket socket, BoundedLock lock, Throwable throwable) {
+    private void serverError(Context context, Socket socket, BoundedLock.LockHolder lock, Throwable throwable) {
         try {
             socket.close();
         } catch (IOException e) {
@@ -358,9 +363,9 @@ public class Communication implements RequestHelper {
     private static class Response {
         final HttpResponse httpResponse;
         final Socket socket;
-        final BoundedLock lock;
+        final BoundedLock.LockHolder lock;
 
-        private Response(HttpResponse httpResponse, Socket socket, BoundedLock lock) {
+        private Response(HttpResponse httpResponse, Socket socket, BoundedLock.LockHolder lock) {
             this.httpResponse = httpResponse;
             this.socket = socket;
             this.lock = lock;

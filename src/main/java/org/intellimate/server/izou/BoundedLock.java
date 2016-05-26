@@ -1,11 +1,14 @@
 package org.intellimate.server.izou;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static javafx.scene.input.KeyCode.M;
 
 /**
  * A lock with bounded waiting
@@ -23,36 +26,57 @@ public class BoundedLock {
         this.max = max;
     }
 
-    public boolean lock(long time, TimeUnit unit) throws IllegalStateException, InterruptedException {
-        int result = atomicInteger.updateAndGet(value -> {
-            if (value >= max) {
-                return -1;
+    public Optional<LockHolder> lock(long time, TimeUnit unit) throws IllegalStateException, InterruptedException {
+        reentrantLock.lock();
+        try {
+            int result = atomicInteger.updateAndGet(value -> {
+                if (value >= max) {
+                    return -1;
+                } else {
+                    value++;
+                    return value;
+                }
+            });
+            if (result == -1) {
+                throw new IllegalStateException("Bound exceeded");
+            } else if (result == 1 ) {
+                System.out.println("lock");
+                return Optional.of(new LockHolder());
             } else {
-                value++;
-                return value;
+                    try {
+                        boolean await = waitCondition.await(time, unit);
+                        if (await) {
+                            System.out.println("lock");
+                            return Optional.of(new LockHolder());
+                        } else {
+                            atomicInteger.decrementAndGet();
+                            return Optional.empty();
+                        }
+                    } catch (InterruptedException e) {
+                        atomicInteger.decrementAndGet();
+                        throw e;
+                    }
             }
-        });
-        if (result == -1) {
-            throw new IllegalStateException("Bound exceeded");
-        } else if (result == 1 ){
-            return true;
-        } else {
-            reentrantLock.lock();
-            try {
-                return waitCondition.await(time, unit);
-            } finally {
-                reentrantLock.unlock();
-            }
+        } finally {
+            reentrantLock.unlock();
         }
     }
 
-    public void unlock() {
-        atomicInteger.decrementAndGet();
-        reentrantLock.lock();
-        try {
-            waitCondition.signal();
-        } finally {
-            reentrantLock.unlock();
+    public class LockHolder {
+        private boolean used = false;
+        public void unlock() {
+            reentrantLock.lock();
+            try {
+                if (used) {
+                    return;
+                } else {
+                    used = true;
+                }
+                atomicInteger.decrementAndGet();
+                waitCondition.signal();
+            } finally {
+                reentrantLock.unlock();
+            }
         }
     }
 }
