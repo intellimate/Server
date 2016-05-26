@@ -16,23 +16,20 @@ import org.slf4j.LoggerFactory;
 import ratpack.exec.Blocking;
 import ratpack.exec.Promise;
 import ratpack.handling.Context;
-import ratpack.stream.TransformablePublisher;
 import ratpack.stream.internal.BufferingPublisher;
 
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocketFactory;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.Lock;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +38,7 @@ import java.util.stream.Collectors;
  * @version 1.0
  */
 //TODO timeout
+//TODO id on connection reponse
 public class Communication implements RequestHelper {
     private final ConcurrentMap<Integer, IzouConnection> izouConnections = new ConcurrentHashMap<>();
     private static Logger logger = LoggerFactory.getLogger(Communication.class);
