@@ -11,10 +11,7 @@ import org.intellimate.server.jwt.JWTHelper;
 import org.intellimate.server.jwt.JWTokenPassed;
 import org.intellimate.server.jwt.Subject;
 import org.intellimate.server.mail.MailHandler;
-import org.intellimate.server.proto.App;
-import org.intellimate.server.proto.AppList;
-import org.intellimate.server.proto.IzouInstance;
-import org.intellimate.server.proto.User;
+import org.intellimate.server.proto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -308,10 +305,13 @@ public class UsersResource {
      * @param userId the user
      * @return the izou-instance
      */
-    public List<IzouInstance> getIzouInstances(int userId) {
+    public IzouInstanceList getIzouInstances(int userId) {
         return izouInstanceOperations.getAllInstancesForUser(userId).stream()
                 .map(record -> IzouInstance.newBuilder().setName(record.getName()).setId(record.getIdInstances()).build())
-                .collect(Collectors.toList());
+                .collect(
+                        Collectors.collectingAndThen(Collectors.toList(),
+                        list -> IzouInstanceList.newBuilder().addAllInstances(list).build())
+                );
     }
 
     /**
