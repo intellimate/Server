@@ -2,6 +2,7 @@ package org.intellimate.server.izou;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.intellimate.server.*;
+import org.intellimate.server.database.model.tables.records.IzouInstanceRecord;
 import org.intellimate.server.database.operations.IzouInstanceOperations;
 import org.intellimate.server.jwt.JWTHelper;
 import org.intellimate.server.jwt.JWTokenPassed;
@@ -9,6 +10,7 @@ import org.intellimate.server.jwt.Subject;
 import org.intellimate.server.proto.HttpRequest;
 import org.intellimate.server.proto.HttpResponse;
 import org.intellimate.server.proto.SocketConnection;
+import org.intellimate.server.proto.SocketConnectionResponse;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
@@ -29,6 +31,7 @@ import java.net.Socket;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -39,6 +42,7 @@ import java.util.stream.Collectors;
  */
 //TODO timeout
 //TODO id on connection reponse
+//TODO pass token
 public class Communication implements RequestHelper {
     private final ConcurrentMap<Integer, IzouConnection> izouConnections = new ConcurrentHashMap<>();
     private static Logger logger = LoggerFactory.getLogger(Communication.class);
@@ -140,9 +144,30 @@ public class Communication implements RequestHelper {
             JWTokenPassed jwTokenPassed = jwtHelper.parseToken(socketConnection.getToken());
             if (!jwTokenPassed.getSubject().equals(Subject.IZOU)) {
                 logger.error("connection tried with illegal token");
+                try {
+                    socket.close();
+                } catch (IOException ex) {
+                    logger.error("an error occured while trying to close socket", ex);
+                }
                 return;
             }
             izouId = jwTokenPassed.getId();
+            Optional<IzouInstanceRecord> instance = izouInstanceOperations.getInstance(izouId);
+            if (!instance.isPresent()) {
+                logger.error("Izou-Instance is not existing anymore");
+                try {
+                    socket.close();
+                } catch (IOException ex) {
+                    logger.error("an error occured while trying to close socket", ex);
+                }
+                return;
+            } else {
+                SocketConnectionResponse.newBuilder()
+                        .setId(instance.get().getIdInstances())
+                        .setRoute("users/"+instance.get().getUser()+"/izou/"+instance.get().getIdInstances()+"/instance/")
+                        .build()
+                        .writeDelimitedTo(socket.getOutputStream());
+            }
             IzouConnection izouConnection = new IzouConnection(socket, new BoundedLock(30));
             IzouConnection existingMayBeClosed = izouConnections.get(izouId);
             if (existingMayBeClosed != null && existingMayBeClosed.socket.isClosed()) {
