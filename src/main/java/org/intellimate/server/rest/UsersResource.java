@@ -276,6 +276,7 @@ public class UsersResource {
      * @param user the user associated
      * @param instanceId the instance id
      */
+    //TODO: connect with Communication
     public String removeIzouInstance(int user, int instanceId, JWTokenPassed jwTokenPassed) {
         assertCorrectRequest(user, jwTokenPassed);
         boolean existed = izouInstanceOperations.removeIzouInstance(user, instanceId);
