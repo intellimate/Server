@@ -102,4 +102,15 @@ public class IzouInstanceOperations extends AbstractOperations {
                 .and(IZOU_INSTANCE.ID_INSTANCES.eq(izouId))
                 .fetchOptional();
     }
+
+    /**
+     * returns the IzouInstance if existing
+     * @param izouId the id of the izou-instnace
+     * @return izouInstance or empty
+     */
+    public Optional<IzouInstanceRecord> getInstance(int izouId) {
+        return create.selectFrom(IZOU_INSTANCE)
+                .where(IZOU_INSTANCE.ID_INSTANCES.eq(izouId))
+                .fetchOptional();
+    }
 }
