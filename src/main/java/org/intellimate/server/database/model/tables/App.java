@@ -35,7 +35,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class App extends TableImpl<AppRecord> {
 
-    private static final long serialVersionUID = 847274159;
+    private static final long serialVersionUID = -948817922;
 
     /**
      * The reference instance of <code>izoudb.App</code>
@@ -74,6 +74,11 @@ public class App extends TableImpl<AppRecord> {
      * The column <code>izoudb.App.active</code>.
      */
     public final TableField<AppRecord, Boolean> ACTIVE = createField("active", org.jooq.impl.SQLDataType.BIT.nullable(false), this, "");
+
+    /**
+     * The column <code>izoudb.App.package</code>.
+     */
+    public final TableField<AppRecord, String> PACKAGE = createField("package", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
     /**
      * Create a <code>izoudb.App</code> table reference
@@ -126,7 +131,7 @@ public class App extends TableImpl<AppRecord> {
      */
     @Override
     public List<UniqueKey<AppRecord>> getKeys() {
-        return Arrays.<UniqueKey<AppRecord>>asList(Keys.KEY_APP_PRIMARY, Keys.KEY_APP_NAME_UNIQUE);
+        return Arrays.<UniqueKey<AppRecord>>asList(Keys.KEY_APP_PRIMARY, Keys.KEY_APP_NAME_UNIQUE, Keys.KEY_APP_PACKAGE_UNIQUE);
     }
 
     /**

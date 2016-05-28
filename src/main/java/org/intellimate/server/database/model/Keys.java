@@ -67,6 +67,7 @@ public class Keys {
 
     public static final UniqueKey<AppRecord> KEY_APP_PRIMARY = UniqueKeys0.KEY_APP_PRIMARY;
     public static final UniqueKey<AppRecord> KEY_APP_NAME_UNIQUE = UniqueKeys0.KEY_APP_NAME_UNIQUE;
+    public static final UniqueKey<AppRecord> KEY_APP_PACKAGE_UNIQUE = UniqueKeys0.KEY_APP_PACKAGE_UNIQUE;
     public static final UniqueKey<AppActiveTagRecord> KEY_APP_ACTIVE_TAG_PRIMARY = UniqueKeys0.KEY_APP_ACTIVE_TAG_PRIMARY;
     public static final UniqueKey<AppDependencyRecord> KEY_APP_DEPENDENCY_PRIMARY = UniqueKeys0.KEY_APP_DEPENDENCY_PRIMARY;
     public static final UniqueKey<AppInstanceRecord> KEY_APP_INSTANCE_PRIMARY = UniqueKeys0.KEY_APP_INSTANCE_PRIMARY;
@@ -112,6 +113,7 @@ public class Keys {
     private static class UniqueKeys0 extends AbstractKeys {
         public static final UniqueKey<AppRecord> KEY_APP_PRIMARY = createUniqueKey(App.APP, "KEY_App_PRIMARY", App.APP.ID_APP);
         public static final UniqueKey<AppRecord> KEY_APP_NAME_UNIQUE = createUniqueKey(App.APP, "KEY_App_name_UNIQUE", App.APP.NAME);
+        public static final UniqueKey<AppRecord> KEY_APP_PACKAGE_UNIQUE = createUniqueKey(App.APP, "KEY_App_package_UNIQUE", App.APP.PACKAGE);
         public static final UniqueKey<AppActiveTagRecord> KEY_APP_ACTIVE_TAG_PRIMARY = createUniqueKey(AppActiveTag.APP_ACTIVE_TAG, "KEY_App_Active_Tag_PRIMARY", AppActiveTag.APP_ACTIVE_TAG.ID_APP_ACTIVE_TAG);
         public static final UniqueKey<AppDependencyRecord> KEY_APP_DEPENDENCY_PRIMARY = createUniqueKey(AppDependency.APP_DEPENDENCY, "KEY_App_Dependency_PRIMARY", AppDependency.APP_DEPENDENCY.ID_APP_DEPENDENCY);
         public static final UniqueKey<AppInstanceRecord> KEY_APP_INSTANCE_PRIMARY = createUniqueKey(AppInstance.APP_INSTANCE, "KEY_App_Instance_PRIMARY", AppInstance.APP_INSTANCE.ID_APP_INSTANCE);
