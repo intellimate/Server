@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
  * @author LeanderK
  * @version 1.0
  */
+//TODO prevent empty!
 public class AppResource {
     private final AppOperations appOperations;
     private final FileStorage fileStorage;
