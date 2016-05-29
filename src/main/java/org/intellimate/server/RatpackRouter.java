@@ -36,6 +36,7 @@ import java.util.function.Consumer;
  * @author LeanderK
  * @version 1.0
  */
+//TODO maxsize
 public class RatpackRouter implements RequestHelper {
     private static final Logger logger = LoggerFactory.getLogger(RatpackRouter.class);
     private final JsonFormat.Parser parser = JsonFormat.parser();
