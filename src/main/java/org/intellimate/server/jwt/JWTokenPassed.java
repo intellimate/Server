@@ -12,13 +12,15 @@ public class JWTokenPassed {
     private final int id;
     private final String app;
     private final String email;
+    private final String token;
 
-    JWTokenPassed(Subject subject, boolean refresh, int id, String app, String email) {
+    JWTokenPassed(Subject subject, boolean refresh, int id, String app, String email, String token) {
         this.subject = subject;
         this.refresh = refresh;
         this.id = id;
         this.app = app;
         this.email = email;
+        this.token = token;
     }
 
     public Subject getSubject() {
@@ -39,5 +41,9 @@ public class JWTokenPassed {
 
     public Optional<String> getEmail() {
         return Optional.ofNullable(email);
+    }
+
+    public String getToken() {
+        return token;
     }
 }

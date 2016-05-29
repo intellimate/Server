@@ -163,7 +163,7 @@ public class JWTHelper {
                 claimsJws.getBody().containsKey(REFRESH_CLAIM) && claimsJws.getBody().get(REFRESH_CLAIM).equals(Boolean.TRUE),
                 id,
                 (String)rawApp,
-                (String)rawEmail);
+                (String)rawEmail, token);
     }
 
     /**
