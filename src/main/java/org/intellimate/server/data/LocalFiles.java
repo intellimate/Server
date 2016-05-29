@@ -129,4 +129,9 @@ public class LocalFiles implements FileStorage {
     public String getLinkForExactName(String name) {
         return baseFileDomain+name;
     }
+
+    @Override
+    public File getFileForName(String name) {
+        return new File(baseDir, name);
+    }
 }
