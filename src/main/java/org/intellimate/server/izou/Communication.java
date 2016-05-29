@@ -40,9 +40,7 @@ import java.util.stream.Collectors;
  * @author LeanderK
  * @version 1.0
  */
-//TODO timeout
-//TODO id on connection reponse
-//TODO pass token
+//TODO timeout? (I think it is already working, but needs to be verified)
 public class Communication implements RequestHelper {
     private final ConcurrentMap<Integer, IzouConnection> izouConnections = new ConcurrentHashMap<>();
     private static Logger logger = LoggerFactory.getLogger(Communication.class);
@@ -85,6 +83,9 @@ public class Communication implements RequestHelper {
         params.add(HttpRequest.Param.newBuilder().setKey("user").addValue(String.valueOf(userID)).build());
         params.add(HttpRequest.Param.newBuilder().setKey("izou").addValue(String.valueOf(izouId)).build());
         jwt.getApp().ifPresent(id -> params.add(HttpRequest.Param.newBuilder().setKey("app").addValue(id).build()));
+        jwt.getApp().ifPresent(ignored ->
+                params.add(HttpRequest.Param.newBuilder().setKey("token").addValue(jwt.getToken()).build())
+        );
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .setUrl(path);
@@ -164,7 +165,7 @@ public class Communication implements RequestHelper {
             } else {
                 SocketConnectionResponse.newBuilder()
                         .setId(instance.get().getIdInstances())
-                        .setRoute("users/"+instance.get().getUser()+"/izou/"+instance.get().getIdInstances()+"/instance/")
+                        .setRoute("/users/"+instance.get().getUser()+"/izou/"+instance.get().getIdInstances()+"/instance/")
                         .build()
                         .writeDelimitedTo(socket.getOutputStream());
             }
