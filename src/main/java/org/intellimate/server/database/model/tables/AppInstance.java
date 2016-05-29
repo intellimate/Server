@@ -35,7 +35,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppInstance extends TableImpl<AppInstanceRecord> {
 
-    private static final long serialVersionUID = -459752247;
+    private static final long serialVersionUID = 77625516;
 
     /**
      * The reference instance of <code>izoudb.App_Instance</code>
@@ -73,7 +73,12 @@ public class AppInstance extends TableImpl<AppInstanceRecord> {
     /**
      * The column <code>izoudb.App_Instance.error</code>.
      */
-    public final TableField<AppInstanceRecord, String> ERROR = createField("error", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+    public final TableField<AppInstanceRecord, String> ERROR = createField("error", org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "");
+
+    /**
+     * The column <code>izoudb.App_Instance.warning</code>.
+     */
+    public final TableField<AppInstanceRecord, String> WARNING = createField("warning", org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "");
 
     /**
      * Create a <code>izoudb.App_Instance</code> table reference

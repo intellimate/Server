@@ -13,7 +13,6 @@ import org.intellimate.server.database.model.Izoudb;
 import org.intellimate.server.database.model.Keys;
 import org.intellimate.server.database.model.tables.records.AppRecord;
 import org.jooq.Field;
-import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Schema;
 import org.jooq.Table;
@@ -35,7 +34,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class App extends TableImpl<AppRecord> {
 
-    private static final long serialVersionUID = -948817922;
+    private static final long serialVersionUID = 1038317381;
 
     /**
      * The reference instance of <code>izoudb.App</code>
@@ -132,14 +131,6 @@ public class App extends TableImpl<AppRecord> {
     @Override
     public List<UniqueKey<AppRecord>> getKeys() {
         return Arrays.<UniqueKey<AppRecord>>asList(Keys.KEY_APP_PRIMARY, Keys.KEY_APP_NAME_UNIQUE, Keys.KEY_APP_PACKAGE_UNIQUE);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<ForeignKey<AppRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<AppRecord, ?>>asList(Keys.APP_DEVELOPER);
     }
 
     /**

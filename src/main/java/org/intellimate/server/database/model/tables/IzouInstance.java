@@ -13,7 +13,6 @@ import org.intellimate.server.database.model.Izoudb;
 import org.intellimate.server.database.model.Keys;
 import org.intellimate.server.database.model.tables.records.IzouInstanceRecord;
 import org.jooq.Field;
-import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Schema;
 import org.jooq.Table;
@@ -35,7 +34,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class IzouInstance extends TableImpl<IzouInstanceRecord> {
 
-    private static final long serialVersionUID = 1992955167;
+    private static final long serialVersionUID = 2096889453;
 
     /**
      * The reference instance of <code>izoudb.Izou_Instance</code>
@@ -117,14 +116,6 @@ public class IzouInstance extends TableImpl<IzouInstanceRecord> {
     @Override
     public List<UniqueKey<IzouInstanceRecord>> getKeys() {
         return Arrays.<UniqueKey<IzouInstanceRecord>>asList(Keys.KEY_IZOU_INSTANCE_PRIMARY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<ForeignKey<IzouInstanceRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<IzouInstanceRecord, ?>>asList(Keys.IZOU_INSTANCE_USER);
     }
 
     /**

@@ -35,7 +35,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppActiveTag extends TableImpl<AppActiveTagRecord> {
 
-    private static final long serialVersionUID = 28866554;
+    private static final long serialVersionUID = -1550646794;
 
     /**
      * The reference instance of <code>izoudb.App_Active_Tag</code>
@@ -124,7 +124,7 @@ public class AppActiveTag extends TableImpl<AppActiveTagRecord> {
      */
     @Override
     public List<ForeignKey<AppActiveTagRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<AppActiveTagRecord, ?>>asList(Keys.APP_ACTIVE_TAG_APP_REF, Keys.APP_ACTIVE_TAG_TAG_REF);
+        return Arrays.<ForeignKey<AppActiveTagRecord, ?>>asList(Keys.APP_ACTIVE_TAG_APP_REF);
     }
 
     /**
