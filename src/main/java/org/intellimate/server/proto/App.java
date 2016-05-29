@@ -165,14 +165,23 @@ public  final class App extends
         getErrorBytes();
 
     /**
-     * <code>optional string warning = 5;</code>
+     * <code>repeated string warnings = 5;</code>
      */
-    java.lang.String getWarning();
+    com.google.protobuf.ProtocolStringList
+        getWarningsList();
     /**
-     * <code>optional string warning = 5;</code>
+     * <code>repeated string warnings = 5;</code>
+     */
+    int getWarningsCount();
+    /**
+     * <code>repeated string warnings = 5;</code>
+     */
+    java.lang.String getWarnings(int index);
+    /**
+     * <code>repeated string warnings = 5;</code>
      */
     com.google.protobuf.ByteString
-        getWarningBytes();
+        getWarningsBytes(int index);
 
     /**
      * <code>optional bool active = 6;</code>
@@ -228,7 +237,7 @@ public  final class App extends
       version_ = "";
       platform_ = "";
       error_ = "";
-      warning_ = "";
+      warnings_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       active_ = false;
       downloadLink_ = "";
       dependencies_ = java.util.Collections.emptyList();
@@ -279,8 +288,11 @@ public  final class App extends
             }
             case 42: {
               java.lang.String s = input.readStringRequireUtf8();
-
-              warning_ = s;
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+                warnings_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000008;
+              }
+              warnings_.add(s);
               break;
             }
             case 48: {
@@ -310,6 +322,9 @@ public  final class App extends
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+          warnings_ = warnings_.getUnmodifiableView();
+        }
         if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
           dependencies_ = java.util.Collections.unmodifiableList(dependencies_);
         }
@@ -431,38 +446,33 @@ public  final class App extends
       }
     }
 
-    public static final int WARNING_FIELD_NUMBER = 5;
-    private volatile java.lang.Object warning_;
+    public static final int WARNINGS_FIELD_NUMBER = 5;
+    private com.google.protobuf.LazyStringList warnings_;
     /**
-     * <code>optional string warning = 5;</code>
+     * <code>repeated string warnings = 5;</code>
      */
-    public java.lang.String getWarning() {
-      java.lang.Object ref = warning_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        warning_ = s;
-        return s;
-      }
+    public com.google.protobuf.ProtocolStringList
+        getWarningsList() {
+      return warnings_;
     }
     /**
-     * <code>optional string warning = 5;</code>
+     * <code>repeated string warnings = 5;</code>
+     */
+    public int getWarningsCount() {
+      return warnings_.size();
+    }
+    /**
+     * <code>repeated string warnings = 5;</code>
+     */
+    public java.lang.String getWarnings(int index) {
+      return warnings_.get(index);
+    }
+    /**
+     * <code>repeated string warnings = 5;</code>
      */
     public com.google.protobuf.ByteString
-        getWarningBytes() {
-      java.lang.Object ref = warning_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        warning_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+        getWarningsBytes(int index) {
+      return warnings_.getByteString(index);
     }
 
     public static final int ACTIVE_FIELD_NUMBER = 6;
@@ -564,8 +574,8 @@ public  final class App extends
       if (!getErrorBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessage.writeString(output, 3, error_);
       }
-      if (!getWarningBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessage.writeString(output, 5, warning_);
+      for (int i = 0; i < warnings_.size(); i++) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 5, warnings_.getRaw(i));
       }
       if (active_ != false) {
         output.writeBool(6, active_);
@@ -592,8 +602,13 @@ public  final class App extends
       if (!getErrorBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessage.computeStringSize(3, error_);
       }
-      if (!getWarningBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessage.computeStringSize(5, warning_);
+      {
+        int dataSize = 0;
+        for (int i = 0; i < warnings_.size(); i++) {
+          dataSize += computeStringSizeNoTag(warnings_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getWarningsList().size();
       }
       if (active_ != false) {
         size += com.google.protobuf.CodedOutputStream
@@ -730,8 +745,8 @@ public  final class App extends
 
         error_ = "";
 
-        warning_ = "";
-
+        warnings_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000008);
         active_ = false;
 
         downloadLink_ = "";
@@ -769,7 +784,11 @@ public  final class App extends
         result.version_ = version_;
         result.platform_ = platform_;
         result.error_ = error_;
-        result.warning_ = warning_;
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          warnings_ = warnings_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000008);
+        }
+        result.warnings_ = warnings_;
         result.active_ = active_;
         result.downloadLink_ = downloadLink_;
         if (dependenciesBuilder_ == null) {
@@ -809,8 +828,14 @@ public  final class App extends
           error_ = other.error_;
           onChanged();
         }
-        if (!other.getWarning().isEmpty()) {
-          warning_ = other.warning_;
+        if (!other.warnings_.isEmpty()) {
+          if (warnings_.isEmpty()) {
+            warnings_ = other.warnings_;
+            bitField0_ = (bitField0_ & ~0x00000008);
+          } else {
+            ensureWarningsIsMutable();
+            warnings_.addAll(other.warnings_);
+          }
           onChanged();
         }
         if (other.getActive() != false) {
@@ -1080,71 +1105,96 @@ public  final class App extends
         return this;
       }
 
-      private java.lang.Object warning_ = "";
-      /**
-       * <code>optional string warning = 5;</code>
-       */
-      public java.lang.String getWarning() {
-        java.lang.Object ref = warning_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          warning_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      private com.google.protobuf.LazyStringList warnings_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureWarningsIsMutable() {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+          warnings_ = new com.google.protobuf.LazyStringArrayList(warnings_);
+          bitField0_ |= 0x00000008;
+         }
       }
       /**
-       * <code>optional string warning = 5;</code>
+       * <code>repeated string warnings = 5;</code>
+       */
+      public com.google.protobuf.ProtocolStringList
+          getWarningsList() {
+        return warnings_.getUnmodifiableView();
+      }
+      /**
+       * <code>repeated string warnings = 5;</code>
+       */
+      public int getWarningsCount() {
+        return warnings_.size();
+      }
+      /**
+       * <code>repeated string warnings = 5;</code>
+       */
+      public java.lang.String getWarnings(int index) {
+        return warnings_.get(index);
+      }
+      /**
+       * <code>repeated string warnings = 5;</code>
        */
       public com.google.protobuf.ByteString
-          getWarningBytes() {
-        java.lang.Object ref = warning_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          warning_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
+          getWarningsBytes(int index) {
+        return warnings_.getByteString(index);
       }
       /**
-       * <code>optional string warning = 5;</code>
+       * <code>repeated string warnings = 5;</code>
        */
-      public Builder setWarning(
+      public Builder setWarnings(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureWarningsIsMutable();
+        warnings_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string warnings = 5;</code>
+       */
+      public Builder addWarnings(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  
-        warning_ = value;
+  ensureWarningsIsMutable();
+        warnings_.add(value);
         onChanged();
         return this;
       }
       /**
-       * <code>optional string warning = 5;</code>
+       * <code>repeated string warnings = 5;</code>
        */
-      public Builder clearWarning() {
-        
-        warning_ = getDefaultInstance().getWarning();
+      public Builder addAllWarnings(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureWarningsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, warnings_);
         onChanged();
         return this;
       }
       /**
-       * <code>optional string warning = 5;</code>
+       * <code>repeated string warnings = 5;</code>
        */
-      public Builder setWarningBytes(
+      public Builder clearWarnings() {
+        warnings_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string warnings = 5;</code>
+       */
+      public Builder addWarningsBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-        
-        warning_ = value;
+        ensureWarningsIsMutable();
+        warnings_.add(value);
         onChanged();
         return this;
       }
