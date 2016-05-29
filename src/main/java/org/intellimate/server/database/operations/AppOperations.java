@@ -30,11 +30,11 @@ public class AppOperations extends AbstractOperations {
         super(create);
     }
 
-    public Optional<App.AppVersion> getAppVersion(int appID, int major, int minor, int patch, List<String> platforms) {
+    public Optional<App.AppVersion> getAppVersion(int appID, int major, int minor, int patch, Set<String> platforms) {
         Set<String> queryPlatforms = new HashSet<>(platforms);
         queryPlatforms.add(JAVA_PLATFORM);
         Result<Record> app = create.select(APP_VERSION.fields())
-                .select(APP_INSTANCE.PLATFORM, APP_INSTANCE.ID_APP_INSTANCE)
+                .select(APP_INSTANCE.PLATFORM, APP_INSTANCE.ID_APP_INSTANCE, APP_INSTANCE.ACTIVE, APP_INSTANCE.ERROR, APP_INSTANCE.WARNING)
                 .select(APP_DEPENDENCY.DEPENDENCY)
                 .from(APP_VERSION)
                 .join(APP_INSTANCE).on(
@@ -53,14 +53,22 @@ public class AppOperations extends AbstractOperations {
             return Optional.empty();
         }
 
-        HashSet<String> resultingPlatforms = new HashSet<>(app.getValues(APP_INSTANCE.PLATFORM));
+        Set<String> resultingPlatforms = new HashSet<>(app.getValues(APP_INSTANCE.PLATFORM));
         if (resultingPlatforms.isEmpty()) {
             return Optional.empty();
         }
-        if (resultingPlatforms.size() > 1) {
-            resultingPlatforms.remove(JAVA_PLATFORM);
-        }
-        String platform = resultingPlatforms.iterator().next();
+
+        String platform = resultingPlatforms.stream()
+                .filter(possiblePlatform -> !possiblePlatform.equals(JAVA_PLATFORM))
+                .filter(platforms::contains)
+                .findAny()
+                .orElse(JAVA_PLATFORM);
+
+        Record instance = app.stream()
+                .filter(record -> platform.equals(record.getValue(APP_INSTANCE.PLATFORM)))
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("Something went terribly wrong"));
+
 
         Set<Integer> unresolvedDependencies = new HashSet<>(app.getValues(APP_DEPENDENCY.DEPENDENCY));
         List<App> dependencies = new ArrayList<>();
@@ -70,7 +78,7 @@ public class AppOperations extends AbstractOperations {
             Integer dependency = unresolvedDependencies.iterator().next();
             unresolvedDependencies.remove(dependency);
             resolved.add(dependency);
-            App resolvedDependency = getDependency(appID, platforms);
+            App resolvedDependency = getDependency(dependency, platforms);
             List<Integer> newDependencies = resolvedDependency.getVersionsList().stream()
                     .flatMap(version -> version.getDependenciesList().stream())
                     .map(App::getId)
@@ -82,12 +90,20 @@ public class AppOperations extends AbstractOperations {
 
         return Optional.of(App.AppVersion.newBuilder()
                 .setVersion(String.format("%d.%d.%d", major, minor, patch))
-                .setDownloadLink(app.get(0).getValue(APP_INSTANCE.ID_APP_INSTANCE)+"")
+                .setPlatform(platform)
+                .setDownloadLink(""+instance.getValue(APP_INSTANCE.ID_APP_INSTANCE))
+                .setActive(instance.getValue(APP_INSTANCE.ACTIVE))
+                .setError(instance.getValue(APP_INSTANCE.ERROR))
+                .addAllWarnings(
+                        Arrays.stream(instance.getValue(APP_INSTANCE.WARNING).split(";"))
+                            .filter(warning -> !warning.isEmpty())
+                            .collect(Collectors.toList())
+                )
                 .addAllDependencies(dependencies)
                 .build());
     }
 
-    private App getDependency(int appID, List<String> platforms) {
+    private App getDependency(int appID, Set<String> platforms) {
         Function<String, List<App>> resolveDependencies = concatenated ->
                 Arrays.stream(concatenated.split(","))
                 .map(Integer::parseInt)
@@ -151,6 +167,9 @@ public class AppOperations extends AbstractOperations {
         return create.select(APP_VERSION.fields())
                 .select(APP_INSTANCE.ID_APP_INSTANCE)
                 .select(APP_INSTANCE.PLATFORM)
+                .select(APP_INSTANCE.ERROR)
+                .select(APP_INSTANCE.WARNING)
+                .select(APP_INSTANCE.ACTIVE)
                 .from(APP_VERSION)
                 .innerJoin(APP_INSTANCE).on(
                         APP_VERSION.ID_APP_VERSION.eq(APP_INSTANCE.APP_REFERENCE)
@@ -233,7 +252,7 @@ public class AppOperations extends AbstractOperations {
 
     //TODO: same version mutiple times, version max 3 char long
     public App insertApp(int user, App app) {
-        AppRecord appRecord = new AppRecord(null, user, app.getName(), app.getDescription(), false);
+        AppRecord appRecord = new AppRecord(null, user, app.getName(), app.getDescription(), false, app.getPackage());
         AppRecord insertedApp = create.insertInto(APP)
                 .set(appRecord)
                 .returning()
@@ -258,7 +277,7 @@ public class AppOperations extends AbstractOperations {
                             platform = "java";
                         }
                         AppInstanceRecord insertedInstance = create.insertInto(APP_INSTANCE)
-                                .set(new AppInstanceRecord(null, insertedVersion.getIdAppVersion(), platform, false))
+                                .set(new AppInstanceRecord(null, insertedVersion.getIdAppVersion(), platform, false, "", ""))
                                 .returning()
                                 .fetchOne();
                         List<AppDependencyRecord> dependencies = appVersion.getDependenciesList().stream()
@@ -347,7 +366,7 @@ public class AppOperations extends AbstractOperations {
                             platform = "java";
                         }
                         AppInstanceRecord insertedInstance = create.insertInto(APP_INSTANCE)
-                                .set(new AppInstanceRecord(null, insertedVersion.getIdAppVersion(), platform, false))
+                                .set(new AppInstanceRecord(null, insertedVersion.getIdAppVersion(), platform, false, "", ""))
                                 .returning()
                                 .fetchOne();
                         List<AppDependencyRecord> dependencies = appVersion.getDependenciesList().stream()
@@ -405,5 +424,43 @@ public class AppOperations extends AbstractOperations {
         return create.selectFrom(APP)
                 .where(APP.DEVELOPER.eq(user))
                 .fetch();
+    }
+
+    public void addWarning(String warning, int appInstance) {
+        //TODO warning after jooq update
+        create.update(APP_INSTANCE)
+                .set(APP_INSTANCE.ERROR, DSL.concat(APP_INSTANCE.WARNING, ";"+warning))
+                .where(APP_INSTANCE.ID_APP_INSTANCE.eq(appInstance))
+                .execute();
+    }
+
+    public void setError(String error, int appInstance) {
+        create.update(APP_INSTANCE)
+                .set(APP_INSTANCE.ERROR, error)
+                .where(APP_INSTANCE.ID_APP_INSTANCE.eq(appInstance))
+                .execute();
+    }
+
+    public Map<String, Integer> getAppsForPackages(Set<String> packageNames) {
+        return create.select(APP.ID_APP, APP.PACKAGE)
+                .from(APP)
+                .where(APP.PACKAGE.in(packageNames))
+                .fetchMap(APP.PACKAGE, Record2::value1);
+    }
+
+    public void setDependencies(List<AppDependencyRecord> dependencies, int appInstance) {
+        create.transaction(conf -> {
+            DSL.using(conf).deleteFrom(APP_DEPENDENCY)
+                    .where(APP_DEPENDENCY.SUBJECT.eq(appInstance))
+                    .execute();
+
+            DSL.using(conf).batchInsert(dependencies).execute();
+        });
+    }
+
+    public Optional<AppRecord> getAppRecord(int appId) {
+        return create.selectFrom(APP)
+                .where(APP.ID_APP.eq(appId))
+                .fetchOptional();
     }
 }
