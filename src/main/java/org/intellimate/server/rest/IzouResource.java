@@ -65,7 +65,7 @@ public class IzouResource {
         String name = String.format("izou%d.jar", izouRecord.getIdIzou());
         CompletableFuture<Long> future = fileStorage.saveExact(request, name);
 
-        return Promise.of(down -> down.accept(future))
+        return Promise.async(down -> down.accept(future))
                 .map(ignore -> {
                     izouOperations.updateIzou(izouRecord.getIdIzou(), true);
                     return Izou.newBuilder()
