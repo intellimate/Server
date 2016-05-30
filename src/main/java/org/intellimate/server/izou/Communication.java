@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
@@ -216,7 +217,7 @@ public class Communication implements RequestHelper {
                     throw new BadRequestException("Maximum of parallel Requests for Izou-Instance reached");
                 }
                 try {
-                    if (izouConnection.socket.isClosed()) {
+                    if (izouConnection.socket.isClosed() || !(izouConnections.get(izou) == izouConnection)) {
                         throw new InternalServerErrorException("1. Izou Connection closed while waiting for availability");
                     }
                     InputStream in = izouConnection.socket.getInputStream();
@@ -236,8 +237,9 @@ public class Communication implements RequestHelper {
                         throw new IzouCommunicationException("Unable to read response from izou");
                     }
                     return new Response(response, izouConnection.socket, lockHolder);
-                } catch (IzouCommunicationException e) {
+                } catch (IzouCommunicationException | SocketException e) {
                     izouConnection.socket.close();
+                    izouConnections.remove(izou);
                     throw e;
                 } finally {
                     lockHolder.unlock();

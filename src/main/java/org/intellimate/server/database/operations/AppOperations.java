@@ -31,6 +31,7 @@ public class AppOperations extends AbstractOperations {
     }
 
     public Optional<App.AppVersion> getAppVersion(int appID, int major, int minor, int patch, Set<String> platforms) {
+        //TODO maybe first get newest version and then query the instances for the best platform match
         Set<String> queryPlatforms = new HashSet<>(platforms);
         queryPlatforms.add(JAVA_PLATFORM);
         Result<Record> app = create.select(APP_VERSION.fields())
@@ -38,7 +39,7 @@ public class AppOperations extends AbstractOperations {
                 .select(APP_DEPENDENCY.DEPENDENCY)
                 .from(APP_VERSION)
                 .join(APP_INSTANCE).on(
-                        APP_VERSION.APP.eq(APP_INSTANCE.APP_REFERENCE)
+                        APP_VERSION.ID_APP_VERSION.eq(APP_INSTANCE.APP_REFERENCE)
                                 .and(APP_INSTANCE.PLATFORM.in(queryPlatforms))
                                 .and(APP_INSTANCE.ACTIVE.eq(true))
                 )
@@ -69,8 +70,12 @@ public class AppOperations extends AbstractOperations {
                 .findAny()
                 .orElseThrow(() -> new IllegalStateException("Something went terribly wrong"));
 
+        Set<Integer> unresolvedDependencies = app.stream()
+                .filter(record -> record.getValue(APP_INSTANCE.ID_APP_INSTANCE).equals(instance.getValue(APP_INSTANCE.ID_APP_INSTANCE)))
+                .map(record -> record.getValue(APP_DEPENDENCY.DEPENDENCY))
+                .collect(Collectors.toSet());
 
-        Set<Integer> unresolvedDependencies = new HashSet<>(app.getValues(APP_DEPENDENCY.DEPENDENCY));
+        unresolvedDependencies.removeIf(integer -> integer == null);
         List<App> dependencies = new ArrayList<>();
         Set<Integer> resolved = new HashSet<>();
 
@@ -104,11 +109,23 @@ public class AppOperations extends AbstractOperations {
     }
 
     private App getDependency(int appID, Set<String> platforms) {
-        Function<String, List<App>> resolveDependencies = concatenated ->
-                Arrays.stream(concatenated.split(","))
-                .map(Integer::parseInt)
-                .map(id -> App.newBuilder().setId(id).build())
-                .collect(Collectors.toList());
+        Function<String, List<App>> resolveDependencies = concatenated -> {
+            if (concatenated != null) {
+                return Arrays.stream(concatenated.split(","))
+                        .filter(dependency -> !dependency.isEmpty())
+                        .map(Integer::parseInt)
+                        .map(id -> App.newBuilder().setId(id).build())
+                        .collect(Collectors.toList());
+            } else {
+                return new ArrayList<>();
+            }
+        };
+
+        Set<String> finalPlatforms = platforms;
+        if (!platforms.contains(JAVA_PLATFORM)) {
+            finalPlatforms = new HashSet<>(platforms);
+            finalPlatforms.add(JAVA_PLATFORM);
+        }
 
         Field<String> dependencies = DSL.groupConcat(APP_DEPENDENCY.DEPENDENCY, ",").as("dependencies");
         return create.select(APP.ID_APP)
@@ -119,13 +136,14 @@ public class AppOperations extends AbstractOperations {
                 .innerJoin(APP_VERSION).onKey()
                 .innerJoin(APP_INSTANCE).on(
                         APP_INSTANCE.APP_REFERENCE.eq(APP_VERSION.ID_APP_VERSION)
-                                .and(APP_INSTANCE.PLATFORM.in(platforms))
+                                .and(APP_INSTANCE.PLATFORM.in(finalPlatforms))
                                 .and(APP_INSTANCE.ACTIVE.eq(true))
                 )
                 .leftJoin(APP_DEPENDENCY).on(
                         APP_DEPENDENCY.SUBJECT.eq(APP_INSTANCE.ID_APP_INSTANCE)
                 )
                 .where(APP.ACTIVE.eq(true))
+                .and(APP.ID_APP.equal(appID))
                 .groupBy(APP.ID_APP, APP.NAME, APP_VERSION.MAJOR, APP_VERSION.MINOR, APP_VERSION.PATCH)
                 .orderBy(APP_VERSION.MAJOR.desc(), APP_VERSION.MINOR.desc(), APP_VERSION.PATCH.desc())
                 .limit(1)
@@ -176,6 +194,7 @@ public class AppOperations extends AbstractOperations {
                         .and(APP_INSTANCE.PLATFORM.in(queryPlatforms))
                 )
                 .where(APP_VERSION.APP.eq(appID))
+                .orderBy(APP_VERSION.MAJOR.desc(), APP_VERSION.MINOR.desc(), APP_VERSION.PATCH.desc())
                 .fetch();
     }
 
