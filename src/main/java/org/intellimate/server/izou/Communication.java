@@ -1,4 +1,5 @@
 package org.intellimate.server.izou;
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.intellimate.server.*;
@@ -237,7 +238,7 @@ public class Communication implements RequestHelper {
                         throw new IzouCommunicationException("Unable to read response from izou");
                     }
                     return new Response(response, izouConnection.socket, lockHolder);
-                } catch (IzouCommunicationException | SocketException e) {
+                } catch (IzouCommunicationException | SocketException | InvalidProtocolBufferException e) {
                     izouConnection.socket.close();
                     izouConnections.remove(izou);
                     throw e;
