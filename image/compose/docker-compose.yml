@@ -5,7 +5,7 @@ services:
         file: base.yml
         service: server
     volumes:
-      - /data/izou
+      - ./data:/data/izou
     links:
        - db_izou:dbizou
     environment:
