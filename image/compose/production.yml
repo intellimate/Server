@@ -22,6 +22,8 @@ services:
     ports:
        - "4000:4000"
     restart: always
+    depends_on:
+      - db_izou
 
   db_izou:
     extends:
@@ -48,3 +50,5 @@ services:
       - "80:80"
       - "443:443"
     restart: always
+    depends_on:
+      - server
