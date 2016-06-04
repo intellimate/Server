@@ -13,6 +13,8 @@ services:
     ports:
        - "4567:4567"
        - "4000:4000"
+    command:
+       - -Dlogback.configurationFile=/conf/logging_trace.xml
     depends_on:
        - db_izou
 
