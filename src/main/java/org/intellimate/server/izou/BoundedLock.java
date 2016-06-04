@@ -2,13 +2,9 @@ package org.intellimate.server.izou;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import static javafx.scene.input.KeyCode.M;
 
 /**
  * A lock with bounded waiting

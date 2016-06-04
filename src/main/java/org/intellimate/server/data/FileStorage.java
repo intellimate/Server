@@ -8,25 +8,23 @@ import org.intellimate.server.database.model.tables.records.AppInstanceRecord;
 import org.intellimate.server.database.model.tables.records.AppRecord;
 import org.intellimate.server.database.model.tables.records.UserRecord;
 import org.intellimate.server.database.operations.AppOperations;
-import org.intellimate.server.proto.App;
-import org.intellimate.server.rest.UsersResource;
 import ratpack.stream.TransformablePublisher;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import static sun.rmi.transport.TransportConstants.Version;
 
 /**
  * @author LeanderK
