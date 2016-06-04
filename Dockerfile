@@ -20,6 +20,6 @@ EXPOSE 4567
 #izou-communication
 EXPOSE 4000
 
-VOLUME bin/data
+VOLUME /bin/data
 
 ENTRYPOINT ["/run.sh"]
