@@ -1,8 +1,8 @@
 package org.intellimate.server.mail;
 
-import com.sendgrid.SendGrid;
-import com.sendgrid.SendGridException;
 import org.intellimate.server.jwt.JWTHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -12,6 +12,7 @@ import java.time.Duration;
  * @version 1.0
  */
 public abstract class MailHandler {
+    private static Logger logger = LoggerFactory.getLogger(MailHandler.class);
     protected final JWTHelper jwtHelper;
     protected final String deliveryEmailAddress;
     protected final boolean disabled;
@@ -24,7 +25,7 @@ public abstract class MailHandler {
 
     public void sendUserConfirmation(int user, String name, String emailAddress) throws IOException {
         if (disabled) {
-            System.out.println(String.format("confirmation for user %d", user));
+            logger.info(String.format("confirmation for user %d", user));
         } else {
             Duration duration = Duration.ofHours(24);
             String jwt = jwtHelper.generateConfirmationToken(user, emailAddress, duration);
@@ -46,7 +47,7 @@ public abstract class MailHandler {
 
     public void sendUserPasswordReset(int user, String name, String emailAddress) throws IOException {
         if (disabled) {
-            System.out.println(String.format("reset password for user %d", user));
+            logger.info(String.format("reset password for user %d", user));
         } else {
             Duration duration = Duration.ofHours(24);
             String jwt = jwtHelper.generateResetToken(user, duration);
