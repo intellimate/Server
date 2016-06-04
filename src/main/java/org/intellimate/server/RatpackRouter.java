@@ -306,6 +306,7 @@ public class RatpackRouter implements RequestHelper {
         return context.getRequest().getBody()
                 .map(TypedData::getText)
                 .map(body -> {
+                    logger.trace("received body: {}", body);
                     try {
                         parser.merge(body, t);
                     } catch (InvalidProtocolBufferException e) {
