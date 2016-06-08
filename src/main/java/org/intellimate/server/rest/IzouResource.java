@@ -1,6 +1,7 @@
 package org.intellimate.server.rest;
 
 import io.netty.buffer.ByteBuf;
+import org.intellimate.server.InternalServerErrorException;
 import org.intellimate.server.UnauthorizedException;
 import org.intellimate.server.data.FileStorage;
 import org.intellimate.server.database.model.tables.records.IzouRecord;
@@ -37,7 +38,9 @@ public class IzouResource {
      * @return the izou-version
      */
     public org.intellimate.server.proto.Izou getCurrentVersion() {
-        IzouRecord izou = izouOperations.getIzouWithHighestVersion();
+        IzouRecord izou = izouOperations.getIzouWithHighestVersion()
+                .orElseThrow(() -> new InternalServerErrorException("No Izou-Version uploaded yet!"));
+
         return org.intellimate.server.proto.Izou.newBuilder()
                 .setId(izou.getIdIzou())
                 .setVersion(String.format("%d.%d.%d", izou.getMajor(), izou.getMinor(), izou.getPatch()))

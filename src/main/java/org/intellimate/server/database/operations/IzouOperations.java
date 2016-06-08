@@ -3,6 +3,8 @@ package org.intellimate.server.database.operations;
 import org.intellimate.server.database.model.tables.records.IzouRecord;
 import org.jooq.DSLContext;
 
+import java.util.Optional;
+
 import static org.intellimate.server.database.model.Tables.IZOU;
 
 /**
@@ -31,11 +33,11 @@ public class IzouOperations extends AbstractOperations {
                 .fetchOne();
     }
 
-    public IzouRecord getIzouWithHighestVersion() {
+    public Optional<IzouRecord> getIzouWithHighestVersion() {
         return create.selectFrom(IZOU)
                 .where(IZOU.ACTIVE.eq(true))
                 .orderBy(IZOU.VERSION.desc())
                 .limit(1)
-                .fetchOne();
+                .fetchOptional();
     }
 }
