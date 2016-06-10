@@ -162,8 +162,9 @@ public class AppResource {
         if (developer != userID) {
             throw new BadRequestException(String.format("user %d is not developer for app %d", userID, app));
         }
+        appOperations.insertInstanceIfNotExistin(app, major, minor, patch, platform);
         AppInstanceRecord appInstanceRecord = appOperations.getAppInstance(app, major, minor, patch, platform)
-                .orElseThrow(() -> new BadRequestException("instance is not existing"));
+                .orElseThrow(() -> new InternalServerErrorException("instance is not existing"));
         String name = String.format("appinstance%d.zip", appInstanceRecord.getIdAppInstance());
         CompletableFuture<String> future = fileStorage.saveExact(input, name)
                 .thenApply(ignored -> {

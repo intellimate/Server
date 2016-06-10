@@ -12,6 +12,7 @@ import org.jooq.lambda.tuple.Tuple2;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -408,6 +409,57 @@ public class AppOperations extends AbstractOperations {
                 .setDescription(app.getDescription())
                 .addAllVersions(versions)
                 .build(), toDeleteFromData);
+    }
+
+    public void insertInstanceIfNotExistin(int app, int major, int minor, int patch, String platform) {
+        create.transaction(conf -> {
+            Optional<Integer> versionId = DSL.using(conf).select(APP_INSTANCE.APP_REFERENCE)
+                    .from(APP_VERSION)
+                    .innerJoin(APP_INSTANCE).on(
+                            APP_INSTANCE.APP_REFERENCE.eq(APP_VERSION.ID_APP_VERSION)
+                                    .and(APP_INSTANCE.PLATFORM.eq(platform))
+                    )
+                    .where(APP_VERSION.APP.eq(app))
+                    .and(
+                            APP_VERSION.APP.eq(app)
+                                    .and(APP_VERSION.MAJOR.eq(major))
+                                    .and(APP_VERSION.MINOR.eq(minor))
+                                    .and(APP_VERSION.PATCH.eq(patch))
+                    )
+                    .fetchOptional()
+                    .map(Record1::value1);
+            if (!versionId.isPresent()) {
+                int appVersionId = versionId.orElse(-1);
+                boolean existsVersion = DSL.using(conf).fetchExists(
+                        DSL.selectFrom(APP_VERSION)
+                                .where(APP_VERSION.APP.eq(app))
+                                .and(
+                                        APP_VERSION.APP.eq(app)
+                                                .and(APP_VERSION.MAJOR.eq(major))
+                                                .and(APP_VERSION.MINOR.eq(minor))
+                                                .and(APP_VERSION.PATCH.eq(patch))
+                                )
+                );
+                Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+                if (!existsVersion) {
+                    DSL.using(conf)
+                            .executeInsert(new AppVersionRecord(null, app, timestamp, major, minor, patch));
+                    appVersionId = DSL.select(APP_VERSION.ID_APP_VERSION)
+                            .from(APP_VERSION)
+                            .where(APP_VERSION.APP.eq(app))
+                            .and(
+                                    APP_VERSION.APP.eq(app)
+                                            .and(APP_VERSION.MAJOR.eq(major))
+                                            .and(APP_VERSION.MINOR.eq(minor))
+                                            .and(APP_VERSION.PATCH.eq(patch))
+                            )
+                            .fetchOne()
+                            .value1();
+                }
+                DSL.using(conf)
+                        .executeInsert(new AppInstanceRecord(null, appVersionId, platform, false, "", ""));
+            }
+        });
     }
 
     public Optional<AppInstanceRecord> getAppInstance(int app, int major, int minor, int patch, String platform) {
